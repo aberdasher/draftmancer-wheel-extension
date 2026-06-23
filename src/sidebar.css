@@ -1,0 +1,32 @@
+#dmw-sidebar {
+  position: fixed;
+  top: 64px;
+  right: 0;
+  width: 220px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: rgba(20, 20, 24, 0.95);
+  color: #eee;
+  font-family: sans-serif;
+  font-size: 13px;
+  z-index: 2147483647;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.5);
+}
+#dmw-sidebar.dmw-collapsed .dmw-body { display: none; }
+.dmw-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-weight: bold;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.dmw-body { padding: 8px; }
+.dmw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.dmw-card { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.dmw-card img { width: 100%; border-radius: 4px; }
+.dmw-card span { margin-top: 2px; font-size: 11px; line-height: 1.1; }
+.dmw-empty { opacity: 0.7; font-style: italic; }
