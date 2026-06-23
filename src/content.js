@@ -1,18 +1,8 @@
-// Isolated content-script world. Injects the page-context scripts, listens for
-// forwarded draft events, runs the wheel tracker, and renders the sidebar.
+// Isolated content-script world. Listens for draft events forwarded by the
+// MAIN-world injector (src/inject.js, loaded at document_start), runs the wheel
+// tracker, and renders the sidebar.
 (function () {
-  // 1. Inject page-context scripts (parser first, then the WebSocket wrapper).
-  function injectScript(path) {
-    const s = document.createElement("script");
-    s.src = chrome.runtime.getURL(path);
-    s.async = false; // preserve execution order: parser must run before inject.js
-    s.onload = () => s.remove();
-    (document.head || document.documentElement).appendChild(s);
-  }
-  injectScript("src/socketio-frame.js");
-  injectScript("src/inject.js");
-
-  // 2. Wheel tracker (createWheelTracker is a content-script global from wheel-core.js).
+  // Wheel tracker (createWheelTracker is a content-script global from wheel-core.js).
   const tracker = createWheelTracker();
 
   // 3. Sidebar.

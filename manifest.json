@@ -6,15 +6,15 @@
   "content_scripts": [
     {
       "matches": ["https://draftmancer.com/*", "https://www.draftmancer.com/*"],
-      "js": ["src/socketio-frame.js", "src/wheel-core.js", "src/content.js"],
+      "js": ["src/socketio-frame.js", "src/inject.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://draftmancer.com/*", "https://www.draftmancer.com/*"],
+      "js": ["src/wheel-core.js", "src/content.js"],
       "css": ["src/sidebar.css"],
       "run_at": "document_idle"
-    }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": ["src/socketio-frame.js", "src/inject.js"],
-      "matches": ["https://draftmancer.com/*", "https://www.draftmancer.com/*"]
     }
   ]
 }
