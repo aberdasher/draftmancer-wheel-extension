@@ -16,7 +16,10 @@ took while the pack circulated the table).
 The extension observes the draft's socket.io WebSocket traffic in the page,
 records each booster you see (keyed by each card's stable `uniqueID`), and when a
 pack wheels back to you it shows the set difference — the cards that were in the
-pack last time but are gone now, excluding your own picks — in a sidebar.
+pack the first time you saw it but are gone now, excluding your own picks — in a
+sidebar. When a pack wheels to you more than once (smaller pods), this is
+cumulative: it remembers everything lost since your first sighting, not just
+since the previous lap.
 
 ## Limitations
 

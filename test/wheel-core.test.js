@@ -51,18 +51,19 @@ test("a different boosterNumber never matches a prior round", () => {
   assert.strictEqual(r.isWheel, false);
 });
 
-test("matches the most recent prior pass in a small pod (incremental)", () => {
+test("is cumulative from the first sighting when a pack wheels multiple times", () => {
   const t = createWheelTracker();
-  // Pick 0: A,B,C,D,E
+  // Pick 0 (first sighting): A,B,C,D,E
   t.handleDraftState({ boosterNumber: 0, pickNumber: 0, booster: [card(1,"A"),card(2,"B"),card(3,"C"),card(4,"D"),card(5,"E")] });
   t.handlePickCard({ pickedCards: [0] }); // take A
-  // Pick 4 (second pass): B,C,D,E minus one taken -> B,C,E (D taken)
+  // Pick 4 (second pass): B,C,E (D was taken by someone else on the first lap)
   t.handleDraftState({ boosterNumber: 0, pickNumber: 4, booster: [card(2,"B"),card(3,"C"),card(5,"E")] });
   t.handlePickCard({ pickedCards: [0] }); // take B
-  // Pick 8 (third pass): C,E minus one -> C (E taken since last pass)
+  // Pick 8 (third pass): C (E taken since last pass)
   const r = t.handleDraftState({ boosterNumber: 0, pickNumber: 8, booster: [card(3,"C")] });
-  // Relative to the pick-4 snapshot: E didn't wheel (B excluded as own pick).
-  assert.deepStrictEqual(r.didntWheel.map((c) => c.uniqueID), [5]);
+  // Cumulative from the FIRST sighting: D (lost on the first lap) AND E (lost since)
+  // both count; A and B are excluded as own picks. Order follows the first snapshot.
+  assert.deepStrictEqual(r.didntWheel.map((c) => c.uniqueID), [4, 5]);
 });
 
 test("handleRejoin seeds a snapshot without crashing and is treated as first pass", () => {

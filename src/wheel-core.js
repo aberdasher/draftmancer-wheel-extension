@@ -25,19 +25,23 @@ function createWheelTracker() {
     }
 
     // Find the most recent prior pass of this same pack: same boosterNumber,
-    // lower pickNumber, largest uniqueID overlap with the current booster.
+    // lower pickNumber and sharing at least one uniqueID. Any shared uniqueID means
+    // the same physical pack (uniqueIDs are globally unique), and the booster only
+    // loses cards as it circulates — so we pick the EARLIEST such snapshot (first
+    // sighting). "Didn't wheel" is then cumulative from the first time you saw the
+    // pack, remembering cards lost on every prior lap, not just the most recent one.
     let best = null;
     let bestOverlap = 0;
-    let bestPickNumber = -1;
     for (const s of snapshots) {
       if (s.boosterNumber !== boosterNumber) continue;
       if (s.pickNumber >= pickNumber) continue;
       let overlap = 0;
       for (const id of ids) if (s.ids.has(id)) overlap++;
-      if (overlap > bestOverlap || (overlap === bestOverlap && s.pickNumber > bestPickNumber)) {
-        bestOverlap = overlap;
-        bestPickNumber = s.pickNumber;
+      if (overlap === 0) continue;
+      // Earliest first sighting wins; among equal pickNumbers, larger overlap.
+      if (best === null || s.pickNumber < best.pickNumber || (s.pickNumber === best.pickNumber && overlap > bestOverlap)) {
         best = s;
+        bestOverlap = overlap;
       }
     }
 
