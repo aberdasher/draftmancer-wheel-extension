@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Draftmancer Didn't Wheel",
+  "version": "0.1.0",
+  "description": "Shows which cards from a pack did not wheel back to you during a Draftmancer draft.",
+  "content_scripts": [
+    {
+      "matches": ["https://draftmancer.com/*", "https://www.draftmancer.com/*"],
+      "js": ["src/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/socketio-frame.js", "src/inject.js"],
+      "matches": ["https://draftmancer.com/*", "https://www.draftmancer.com/*"]
+    }
+  ]
+}
