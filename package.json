@@ -1,0 +1,14 @@
+{
+  "name": "draftmancer-wheel-extension",
+  "version": "0.1.0",
+  "description": "Chrome extension showing which cards did not wheel in a Draftmancer draft.",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test",
+    "test:e2e": "node test/e2e/draft-harness.js"
+  },
+  "devDependencies": {
+    "puppeteer": "^24.43.1"
+  }
+}
