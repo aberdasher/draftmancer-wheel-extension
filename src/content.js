@@ -67,6 +67,7 @@
 
   // 4. Receive forwarded events.
   window.addEventListener("message", (ev) => {
+    if (ev.origin !== window.location.origin) return;
     if (ev.source !== window) return;
     const msg = ev.data;
     if (!msg || msg.source !== "dm-wheel") return;

@@ -20,6 +20,7 @@ pack last time but are gone now, excluding your own picks — in a sidebar.
 
 ## Limitations
 
+- Requires Chrome 111 or newer (the extension uses a MAIN-world content script to observe the WebSocket before the app connects, which requires Chrome 111+).
 - Standard booster draft only. Other modes (Winston, Grid, etc.) are ignored.
 - draftmancer.com only.
 - If you reload the page mid-draft, picks made before the reload are not tracked.

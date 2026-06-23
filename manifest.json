@@ -3,6 +3,7 @@
   "name": "Draftmancer Didn't Wheel",
   "version": "0.1.0",
   "description": "Shows which cards from a pack did not wheel back to you during a Draftmancer draft.",
+  "minimum_chrome_version": "111",
   "content_scripts": [
     {
       "matches": ["https://draftmancer.com/*", "https://www.draftmancer.com/*"],

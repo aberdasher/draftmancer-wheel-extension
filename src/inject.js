@@ -7,7 +7,7 @@
     try {
       const parsed = globalThis.parseSocketIOFrame(data);
       if (parsed && FORWARD.has(parsed.event)) {
-        window.postMessage({ source: "dm-wheel", event: parsed.event, args: parsed.args }, "*");
+        window.postMessage({ source: "dm-wheel", event: parsed.event, args: parsed.args }, window.location.origin);
       }
     } catch (_e) {
       /* never throw into page code */
