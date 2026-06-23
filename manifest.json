@@ -6,7 +6,8 @@
   "content_scripts": [
     {
       "matches": ["https://draftmancer.com/*", "https://www.draftmancer.com/*"],
-      "js": ["src/content.js"],
+      "js": ["src/socketio-frame.js", "src/wheel-core.js", "src/content.js"],
+      "css": ["src/sidebar.css"],
       "run_at": "document_idle"
     }
   ],
