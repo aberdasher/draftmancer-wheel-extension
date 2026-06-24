@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Draftmancer Draft Log Replay</title>
+    <link rel="stylesheet" href="src/viewer/viewer.css" />
+  </head>
+  <body>
+    <div id="dmw-landing">
+      <h1>Draftmancer Draft Log Replay</h1>
+      <p>Load a Draftmancer MTGO / MagicProTools draft log to replay your draft pick by pick.</p>
+      <input type="file" id="dmw-file" accept=".txt,text/plain" />
+      <div>or paste the log below:</div>
+      <textarea id="dmw-paste" rows="10" placeholder="Paste your draft log here…"></textarea>
+      <button id="dmw-load">Load</button>
+      <div id="dmw-error" class="dmw-error"></div>
+    </div>
+
+    <div id="dmw-replay" hidden>
+      <div id="dmw-header">
+        <button id="dmw-prev">◀ Prev</button>
+        <span id="dmw-position"></span>
+        <button id="dmw-next">Next ▶</button>
+        <span id="dmw-notice"></span>
+      </div>
+
+      <section id="dmw-booster-section">
+        <h2>Booster</h2>
+        <div id="dmw-booster" class="dmw-grid"></div>
+      </section>
+
+      <section id="dmw-wheel-section" hidden>
+        <h2 id="dmw-wheel-title"></h2>
+        <div id="dmw-wheel" class="dmw-grid"></div>
+      </section>
+
+      <section id="dmw-deck-section">
+        <h2 id="dmw-deck-title"></h2>
+        <div id="dmw-curve" class="dmw-curve"></div>
+      </section>
+    </div>
+
+    <script src="src/wheel-core.js"></script>
+    <script src="src/viewer/log-parser.js"></script>
+    <script src="src/viewer/scryfall.js"></script>
+    <script src="src/viewer/replay.js"></script>
+    <script src="src/viewer/viewer.js"></script>
+  </body>
+</html>

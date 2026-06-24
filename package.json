@@ -7,7 +7,7 @@
   "scripts": {
     "test": "node --test test/*.test.js",
     "test:e2e": "node test/e2e/draft-harness.js",
-    "package": "rm -f draftmancer-wheel-extension.zip && zip -r draftmancer-wheel-extension.zip manifest.json src -x '*/.DS_Store'"
+    "package": "rm -f draftmancer-wheel-extension.zip && zip -r draftmancer-wheel-extension.zip manifest.json background.js viewer.html src icons -x '*/.DS_Store'"
   },
   "devDependencies": {
     "puppeteer": "^24.43.1"

@@ -4,6 +4,22 @@
   "version": "0.1.0",
   "description": "Shows which cards from a pack did not wheel back to you during a Draftmancer draft.",
   "minimum_chrome_version": "111",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Draftmancer Draft Log Replay",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": { "service_worker": "background.js" },
+  "host_permissions": ["https://api.scryfall.com/*"],
   "content_scripts": [
     {
       "matches": ["https://draftmancer.com/*", "https://www.draftmancer.com/*"],
