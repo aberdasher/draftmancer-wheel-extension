@@ -1,6 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert");
-const { buildIdentifiers, chunk, toCardData, fetchCardData } = require("../src/viewer/scryfall.js");
+const Scryfall = require("../src/viewer/scryfall.js");
+const { buildIdentifiers, chunk, toCardData, fetchCardData } = Scryfall;
 
 test("buildIdentifiers dedupes by name and prefers set+collector", () => {
   const ids = buildIdentifiers([
@@ -75,4 +76,16 @@ test("returns partial results when one batch fails but another succeeds", async 
   const map = await fetchCardData(cards, stubFetch);
   assert.strictEqual(map.size, 1);        // only the second (1-card) batch succeeded
   assert.strictEqual(map.has("card75"), true);
+});
+
+test("filterUnknown returns only cards whose lowercased name is not in known", () => {
+  const known = new Set(["shock"]);
+  const out = Scryfall.filterUnknown([{ name: "Shock" }, { name: "Opt" }, { name: "shock" }], known);
+  assert.deepStrictEqual(out.map((c) => c.name), ["Opt"]);
+});
+
+test("filterUnknown works with a Map keyed by lowercased name", () => {
+  const known = new Map([["opt", { name: "Opt" }]]);
+  const out = Scryfall.filterUnknown([{ name: "Opt" }, { name: "Bolt" }], known);
+  assert.deepStrictEqual(out.map((c) => c.name), ["Bolt"]);
 });

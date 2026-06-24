@@ -22,6 +22,10 @@ function chunk(arr, size) {
   return out;
 }
 
+function filterUnknown(cards, known) {
+  return cards.filter((c) => !known.has(c.name.toLowerCase()));
+}
+
 function toCardData(card) {
   const face = card.card_faces && card.card_faces[0];
   const imageUrl =
@@ -68,6 +72,6 @@ async function fetchCardData(cards, fetchImpl) {
   return map;
 }
 
-const Scryfall = { buildIdentifiers, chunk, toCardData, fetchCardData };
+const Scryfall = { buildIdentifiers, chunk, toCardData, fetchCardData, filterUnknown };
 if (typeof module !== "undefined" && module.exports) module.exports = Scryfall;
 if (typeof globalThis !== "undefined") globalThis.Scryfall = Scryfall;
