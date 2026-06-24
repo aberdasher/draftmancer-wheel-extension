@@ -22,7 +22,7 @@
         <span id="dmw-position"></span>
         <button id="dmw-next">Next ▶</button>
         <label id="dmw-hidepick-label" class="dmw-toggle">
-          <input type="checkbox" id="dmw-hidepick" /> Hide my pick
+          <input type="checkbox" id="dmw-hidepick" checked /> Hide my pick
         </label>
         <button id="dmw-reveal" hidden>Reveal pick</button>
         <span id="dmw-notice"></span>
@@ -39,8 +39,16 @@
       </section>
 
       <section id="dmw-deck-section">
-        <h2 id="dmw-deck-title"></h2>
-        <div id="dmw-curve" class="dmw-curve"></div>
+        <div id="dmw-deck-header">
+          <h2 id="dmw-deck-title"></h2>
+          <span class="dmw-deck-controls">
+            <span class="dmw-sortlabel">Sort:</span>
+            <button id="dmw-sort-cmc" class="dmw-sortbtn dmw-active">CMC</button>
+            <button id="dmw-sort-color" class="dmw-sortbtn">Color</button>
+            <label class="dmw-toggle"><input type="checkbox" id="dmw-split" /> Split creatures</label>
+          </span>
+        </div>
+        <div id="dmw-deck"></div>
       </section>
     </div>
 
@@ -48,6 +56,7 @@
     <script src="src/viewer/log-parser.js"></script>
     <script src="src/viewer/scryfall.js"></script>
     <script src="src/viewer/replay.js"></script>
+    <script src="src/viewer/deck-layout.js"></script>
     <script src="src/viewer/viewer.js"></script>
   </body>
 </html>

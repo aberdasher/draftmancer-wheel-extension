@@ -82,11 +82,6 @@ button:disabled {
 #dmw-wheel-section h2 {
   color: #f9a;
 }
-.dmw-curve {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-}
 .dmw-col {
   flex: 1;
   min-width: 90px;
@@ -108,4 +103,51 @@ button:disabled {
   font-size: 13px;
   cursor: pointer;
   user-select: none;
+}
+#dmw-deck-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.dmw-deck-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.dmw-sortlabel {
+  font-size: 13px;
+  opacity: 0.8;
+}
+.dmw-sortbtn.dmw-active {
+  outline: 2px solid #2a6;
+  outline-offset: 1px;
+}
+.dmw-row-head {
+  font-weight: bold;
+  font-size: 13px;
+  margin: 6px 0 2px;
+  opacity: 0.85;
+}
+.dmw-cols {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.dmw-stack {
+  display: flex;
+  flex-direction: column;
+}
+/* Overlap stacked cards so only each card's title strip shows (margin-% is
+   relative to width; card art aspect ≈ 1.4× width, so ~-1.18 reveals the top). */
+.dmw-stack .dmw-card {
+  width: 100%;
+  position: relative; /* establish stacking context so hover z-index applies */
+}
+.dmw-stack .dmw-card:not(:first-child) {
+  margin-top: -118%;
+}
+.dmw-stack .dmw-card:hover {
+  z-index: 10;
 }
