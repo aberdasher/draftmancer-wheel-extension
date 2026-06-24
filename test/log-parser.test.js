@@ -56,3 +56,22 @@ test("tolerates CRLF line endings", () => {
 test("throws a clear error when there are no pick blocks", () => {
   assert.throws(() => parseDraftLog("just some text\nwith no packs"), /Pack .* pick/i);
 });
+
+test("a banner line ends the current pick block even with no blank line before it", () => {
+  const log = `Players:
+--> Me
+
+Pack 1 pick 1:
+--> Shock
+    Opt
+------ NEXT ------
+Pack 2 pick 1:
+--> Bolt
+    Counterspell
+`;
+  const { picks } = parseDraftLog(log);
+  assert.strictEqual(picks.length, 2);
+  // pick 1 keeps only its two cards; nothing leaks across the banner
+  assert.deepStrictEqual(picks[0].cards.map((c) => c.name), ["Shock", "Opt"]);
+  assert.deepStrictEqual(picks[1].cards.map((c) => c.name), ["Bolt", "Counterspell"]);
+});

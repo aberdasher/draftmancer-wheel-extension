@@ -34,8 +34,8 @@ function parseDraftLog(text) {
     }
     if (current) {
       if (line.trim() === "" || /^-{3,}/.test(line)) {
-        // blank line or "------ banner ------" ends/separates blocks
-        if (line.trim() === "") current = null;
+        // blank line or "------ banner ------" ends the current block
+        current = null;
         continue;
       }
       const c = line.match(cardRe);
