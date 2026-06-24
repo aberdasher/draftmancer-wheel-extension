@@ -31,7 +31,10 @@ function buildReplay(parsed) {
         id = nextId++;
         idByKey.set(key, id);
       }
-      return { uniqueID: id, name: c.name, set: c.set, collector: c.collector };
+      const item = { uniqueID: id, name: c.name };
+      if (c.set) item.set = c.set;
+      if (c.collector) item.collector = c.collector;
+      return item;
     });
 
     const result = tracker.handleDraftState({
