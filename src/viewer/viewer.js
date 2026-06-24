@@ -202,6 +202,17 @@
     });
   }
 
+  function onLastDraftChanged(changes, area) {
+    if (area !== "local" || !changes.dmwLastDraft || !following || !replay) return;
+    const draft = changes.dmwLastDraft.newValue;
+    if (!draft || !draft.picks || draft.picks.length === 0) return;
+    const wasAtEnd = stepIndex === replay.steps.length - 1;
+    replay = buildReplay(draft);
+    stepIndex = wasAtEnd ? replay.steps.length - 1 : Math.min(stepIndex, replay.steps.length - 1);
+    renderStep();
+    loadCardData().then(renderStep);
+  }
+
   function refreshLastDraftButton() {
     const btn = $("dmw-load-last");
     const area = storageLocal();
@@ -241,6 +252,8 @@
     });
     $("dmw-load-last").addEventListener("click", loadLastDraft);
     refreshLastDraftButton();
+    const area = (typeof chrome !== "undefined" && chrome.storage && chrome.storage.onChanged) || null;
+    if (area) chrome.storage.onChanged.addListener(onLastDraftChanged);
     $("dmw-prev").addEventListener("click", () => go(-1));
     $("dmw-next").addEventListener("click", () => go(1));
     document.addEventListener("keydown", (e) => {
