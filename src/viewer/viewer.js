@@ -151,6 +151,7 @@
       if (replay) renderStep();
     });
     $("dmw-reveal").addEventListener("click", () => {
+      if (!replay) return;
       revealed = true;
       renderStep();
     });
