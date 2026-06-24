@@ -101,3 +101,11 @@ button:disabled {
   width: 100%;
   margin-bottom: 4px;
 }
+.dmw-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+}

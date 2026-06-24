@@ -4,6 +4,8 @@
   let replay = null; // { player, steps }
   let stepIndex = 0;
   let cardData = new Map(); // nameLowercased -> { imageUrl, cmc, colors, typeLine, name }
+  let hidePick = false; // "Hide my pick" toggle
+  let revealed = false; // whether the current step's pick has been revealed
 
   const $ = (id) => document.getElementById(id);
   const COLUMNS = ["0", "1", "2", "3", "4", "5", "6+"];
@@ -69,9 +71,11 @@
     $("dmw-prev").disabled = stepIndex === 0;
     $("dmw-next").disabled = stepIndex === replay.steps.length - 1;
 
+    const showPick = !hidePick || revealed;
     const booster = $("dmw-booster");
     booster.innerHTML = "";
-    step.cards.forEach((c) => booster.appendChild(cardEl(c, c.picked)));
+    step.cards.forEach((c) => booster.appendChild(cardEl(c, c.picked && showPick)));
+    $("dmw-reveal").hidden = !(hidePick && !revealed);
 
     const ws = $("dmw-wheel-section");
     if (step.didntWheel) {
@@ -95,6 +99,7 @@
     const n = Math.min(replay.steps.length - 1, Math.max(0, stepIndex + delta));
     if (n !== stepIndex) {
       stepIndex = n;
+      revealed = false;
       renderStep();
     }
   }
@@ -110,6 +115,7 @@
       return;
     }
     stepIndex = 0;
+    revealed = false;
     cardData = new Map();
     $("dmw-landing").hidden = true;
     $("dmw-replay").hidden = false;
@@ -138,6 +144,16 @@
     document.addEventListener("keydown", (e) => {
       if (e.key === "ArrowLeft") go(-1);
       else if (e.key === "ArrowRight") go(1);
+    });
+    $("dmw-hidepick").addEventListener("change", (e) => {
+      hidePick = e.target.checked;
+      revealed = false; // re-hide on toggle
+      if (replay) renderStep();
+    });
+    $("dmw-reveal").addEventListener("click", () => {
+      if (!replay) return;
+      revealed = true;
+      renderStep();
     });
   }
 

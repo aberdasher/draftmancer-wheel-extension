@@ -62,12 +62,15 @@ function buildReplay(parsed) {
       return r;
     });
 
+    // Snapshot the deck as it stood ENTERING this pick (excludes the current
+    // selection); the card taken here first appears in the deck at the next step.
+    const deckBefore = deckSoFar.slice();
     for (const idx of p.pickedIndices) {
       if (p.cards[idx]) deckSoFar.push(ref(p.cards[idx]));
     }
     tracker.handlePickCard({ pickedCards: p.pickedIndices });
 
-    steps.push({ packNum: p.packNum, pickNum: p.pickNum, cards, didntWheel, deckSoFar: deckSoFar.slice() });
+    steps.push({ packNum: p.packNum, pickNum: p.pickNum, cards, didntWheel, deckSoFar: deckBefore });
   }
 
   return { player: parsed.player, steps };

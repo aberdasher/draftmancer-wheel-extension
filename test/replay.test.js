@@ -25,11 +25,11 @@ test("first pass has didntWheel null and marks the picked card", () => {
   assert.deepStrictEqual(steps[0].cards.map((c) => c.picked), [true, false, false]);
 });
 
-test("deckSoFar accumulates picked cards in pick order", () => {
+test("deckSoFar reflects only picks made before the current pick", () => {
   const { steps } = buildReplay(parsed);
-  assert.deepStrictEqual(steps[0].deckSoFar.map((c) => c.name), ["Alpha"]);
-  assert.deepStrictEqual(steps[1].deckSoFar.map((c) => c.name), ["Alpha", "Delta"]);
-  assert.deepStrictEqual(steps[2].deckSoFar.map((c) => c.name), ["Alpha", "Delta", "Beta"]);
+  assert.deepStrictEqual(steps[0].deckSoFar.map((c) => c.name), []); // nothing drafted entering pick 1
+  assert.deepStrictEqual(steps[1].deckSoFar.map((c) => c.name), ["Alpha"]); // only pick 1's card
+  assert.deepStrictEqual(steps[2].deckSoFar.map((c) => c.name), ["Alpha", "Delta"]); // picks 1 and 2
 });
 
 test("the wheel step reports the card others took, excluding your own picks", () => {
