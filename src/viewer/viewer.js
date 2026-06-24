@@ -8,6 +8,7 @@
   let revealed = false; // whether the current step's pick has been revealed
   let deckSort = Prefs.DEFAULTS.deckSort; // "cmc" | "color" (persisted)
   let splitCreatures = Prefs.DEFAULTS.splitCreatures; // (persisted)
+  let following = false; // viewer is tracking the live-captured draft
 
   const $ = (id) => document.getElementById(id);
 
@@ -131,6 +132,29 @@
     }
   }
 
+  function storageLocal() {
+    return (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) || null;
+  }
+
+  // Fetch Scryfall data only for cards not already cached, merging into cardData.
+  async function loadCardData() {
+    const all = [];
+    for (const s of replay.steps) for (const c of s.cards) all.push(c);
+    const missing = Scryfall.filterUnknown(all, cardData);
+    if (missing.length === 0) {
+      $("dmw-notice").textContent = "";
+      return;
+    }
+    $("dmw-notice").textContent = "Loading card images…";
+    try {
+      const more = await Scryfall.fetchCardData(missing);
+      for (const [k, v] of more) cardData.set(k, v);
+      $("dmw-notice").textContent = "";
+    } catch (e) {
+      $("dmw-notice").textContent = "Card images unavailable (Scryfall fetch failed) — showing names.";
+    }
+  }
+
   async function load(text) {
     $("dmw-error").textContent = "";
     let parsed;
@@ -141,23 +165,62 @@
       $("dmw-error").textContent = e.message;
       return;
     }
+    following = false; // loading an external log exits follow mode
     stepIndex = 0;
     revealed = false;
     cardData = new Map();
     $("dmw-landing").hidden = true;
     $("dmw-replay").hidden = false;
     renderStep();
-
-    $("dmw-notice").textContent = "Loading card images…";
-    const all = [];
-    for (const s of replay.steps) for (const c of s.cards) all.push(c);
-    try {
-      cardData = await Scryfall.fetchCardData(all);
-      $("dmw-notice").textContent = "";
-    } catch (e) {
-      $("dmw-notice").textContent = "Card images unavailable (Scryfall fetch failed) — showing names.";
-    }
+    await loadCardData();
     renderStep();
+  }
+
+  function loadLastDraft() {
+    $("dmw-error").textContent = "";
+    const area = storageLocal();
+    if (!area) {
+      $("dmw-error").textContent = "Storage unavailable.";
+      return;
+    }
+    area.get("dmwLastDraft", async (data) => {
+      const draft = data && data.dmwLastDraft;
+      if (!draft || !draft.picks || draft.picks.length === 0) {
+        $("dmw-error").textContent = "No saved draft yet — draft on draftmancer.com first.";
+        return;
+      }
+      following = true;
+      replay = buildReplay(draft);
+      stepIndex = replay.steps.length - 1; // jump to the latest pick
+      revealed = false;
+      cardData = new Map();
+      $("dmw-landing").hidden = true;
+      $("dmw-replay").hidden = false;
+      renderStep();
+      await loadCardData();
+      renderStep();
+    });
+  }
+
+  function refreshLastDraftButton() {
+    const btn = $("dmw-load-last");
+    const area = storageLocal();
+    if (!area) {
+      btn.disabled = true;
+      btn.textContent = "Load my last draft (unavailable)";
+      return;
+    }
+    area.get("dmwLastDraft", (data) => {
+      const d = data && data.dmwLastDraft;
+      if (d && d.picks && d.picks.length) {
+        const when = new Date(d.capturedAt || 0).toLocaleString();
+        btn.disabled = false;
+        btn.textContent = `Load my last draft — ${when} · ${d.picks.length} picks`;
+      } else {
+        btn.disabled = true;
+        btn.textContent = "Load my last draft (none captured yet)";
+      }
+    });
   }
 
   function init() {
@@ -176,6 +239,8 @@
       if (file) file.text().then(load).catch((e) => ($("dmw-error").textContent = e.message));
       else load($("dmw-paste").value || "");
     });
+    $("dmw-load-last").addEventListener("click", loadLastDraft);
+    refreshLastDraftButton();
     $("dmw-prev").addEventListener("click", () => go(-1));
     $("dmw-next").addEventListener("click", () => go(1));
     document.addEventListener("keydown", (e) => {
