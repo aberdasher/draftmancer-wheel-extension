@@ -65,7 +65,7 @@
 
   function renderStep() {
     const step = replay.steps[stepIndex];
-    $("dmw-position").textContent = `Pack ${step.packNum} · Pick ${step.pickNum}  (${stepIndex + 1}/${replay.steps.length})`;
+    $("dmw-position").textContent = `Pack ${step.packNum} · Pick ${step.pickNum} (${stepIndex + 1}/${replay.steps.length})`;
     $("dmw-prev").disabled = stepIndex === 0;
     $("dmw-next").disabled = stepIndex === replay.steps.length - 1;
 
@@ -130,7 +130,7 @@
   function init() {
     $("dmw-load").addEventListener("click", () => {
       const file = $("dmw-file").files[0];
-      if (file) file.text().then(load);
+      if (file) file.text().then(load).catch((e) => ($("dmw-error").textContent = e.message));
       else load($("dmw-paste").value || "");
     });
     $("dmw-prev").addEventListener("click", () => go(-1));
