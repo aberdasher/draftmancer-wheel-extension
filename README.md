@@ -32,9 +32,17 @@ since the previous lap.
 
 ## Development
 
-Run the unit tests for the pure logic (frame parsing + wheel matching):
+Run the unit tests for the pure logic (parsing, wheel matching, replay, deck layout, prefs):
 
     npm test
+
+Drive a live bot draft on draftmancer.com to exercise the live feature end to end:
+
+    npm run test:e2e
+
+Build a shareable unpacked-extension zip (manifest + src + icons):
+
+    npm run package
 
 ## Draft Log Replay viewer
 
@@ -43,12 +51,15 @@ or paste a Draftmancer draft log exported in **MTGO / MagicProTools** format, th
 step through your draft pick by pick with the on-screen buttons or the ← / →
 arrow keys. Each step shows:
 
-- the booster you faced, with your pick highlighted,
+- the booster you faced (your pick is **hidden by default** for self-quizzing —
+  toggle **Hide my pick** off, or click **Reveal pick**, to show it),
 - which cards did not wheel back when a pack returns to you,
-- your deck so far, grouped into mana-curve columns.
+- your deck so far, as **stacked columns** you can sort by **CMC** or **Color**,
+  with an optional **Split creatures** toggle (creatures vs non-creatures).
 
-Card images and data are fetched from Scryfall, so the viewer needs an internet
-connection. Requires Chrome 111+.
+Your sort / split / hide choices persist across sessions. Card images and data
+are fetched from Scryfall, so the viewer needs an internet connection. Requires
+Chrome 111+.
 
 Note: the log identifies cards by name, so two different physical copies of the
 same card name within a single booster can't be told apart — at worst this slightly
