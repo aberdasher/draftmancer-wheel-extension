@@ -29,6 +29,10 @@ function parseDraftLog(text) {
       continue;
     }
     if (inPlayers) {
+      if (line.trim() === "" || /^-{3,}/.test(line)) {
+        inPlayers = false;
+        continue;
+      }
       const pm = line.match(/^(?:-->|\s{2,})\s*(.*\S)/);
       if (pm) {
         players.push(pm[1]);
@@ -44,8 +48,10 @@ function parseDraftLog(text) {
       }
       const c = line.match(cardRe);
       if (!c) continue;
+      const name = c[1].trim();
+      if (!name) continue;
       const picked = /^-->/.test(line);
-      const card = { name: c[1].trim() };
+      const card = { name };
       if (c[2] && c[3]) {
         card.set = c[2];
         card.collector = c[3];

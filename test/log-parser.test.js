@@ -63,6 +63,34 @@ test("collects all players in the Players block plus the owner", () => {
   assert.deepStrictEqual(players, ["Me", "Bot 1"]);
 });
 
+test("ends the Players block at the first blank line, ignoring later header metadata", () => {
+  const log = `Players:
+--> Me
+    Opp
+
+    Cube settings: singleton
+
+Pack 1 pick 1:
+--> Shock
+    Opt
+`;
+  assert.deepStrictEqual(parseDraftLog(log).players, ["Me", "Opp"]);
+});
+
+test("skips a card line with an empty name", () => {
+  const log = `Players:
+--> Me
+
+Pack 1 pick 1:
+-->
+    Shock
+    Opt
+`;
+  const { picks } = parseDraftLog(log);
+  assert.deepStrictEqual(picks[0].cards.map((c) => c.name), ["Shock", "Opt"]);
+  assert.deepStrictEqual(picks[0].pickedIndices, []); // the empty pick line was skipped
+});
+
 test("a banner line ends the current pick block even with no blank line before it", () => {
   const log = `Players:
 --> Me

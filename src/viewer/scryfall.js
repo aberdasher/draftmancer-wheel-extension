@@ -42,20 +42,29 @@ async function fetchCardData(cards, fetchImpl) {
   if (!f) throw new Error("No fetch implementation available.");
   const batches = chunk(buildIdentifiers(cards), 75);
   const map = new Map();
+  let failures = 0;
+  let lastError = null;
   for (let i = 0; i < batches.length; i++) {
     if (i > 0) await new Promise((r) => setTimeout(r, 100)); // be gentle on Scryfall
-    const res = await f("https://api.scryfall.com/cards/collection", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ identifiers: batches[i] }),
-    });
-    if (!res.ok) throw new Error("Scryfall request failed: " + res.status);
-    const json = await res.json();
-    for (const card of json.data || []) {
-      const data = toCardData(card);
-      map.set(data.name.toLowerCase(), data);
+    try {
+      const res = await f("https://api.scryfall.com/cards/collection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifiers: batches[i] }),
+      });
+      if (!res.ok) throw new Error("Scryfall request failed: " + res.status);
+      const json = await res.json();
+      for (const card of json.data || []) {
+        const data = toCardData(card);
+        map.set(data.name.toLowerCase(), data);
+      }
+    } catch (e) {
+      failures++;
+      lastError = e;
     }
   }
+  // Only fail hard if nothing came back at all; otherwise return partial results.
+  if (batches.length > 0 && failures === batches.length) throw lastError;
   return map;
 }
 

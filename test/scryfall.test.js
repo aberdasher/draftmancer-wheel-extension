@@ -60,3 +60,19 @@ test("fetchCardData throws on a non-ok response", async () => {
   const stubFetch = async () => ({ ok: false, status: 503, json: async () => ({}) });
   await assert.rejects(() => fetchCardData([{ name: "Shock" }], stubFetch), /503/);
 });
+
+test("returns partial results when one batch fails but another succeeds", async () => {
+  const cards = Array.from({ length: 76 }, (_, i) => ({ name: "Card" + i }));
+  let call = 0;
+  const stubFetch = async (url, opts) => {
+    call++;
+    if (call === 1) return { ok: false, status: 503, json: async () => ({}) }; // first 75-card batch fails
+    const data = JSON.parse(opts.body).identifiers.map((id) => ({
+      name: id.name, cmc: 1, image_uris: { normal: id.name + ".jpg" }, type_line: "Instant", colors: [],
+    }));
+    return { ok: true, json: async () => ({ data, not_found: [] }) };
+  };
+  const map = await fetchCardData(cards, stubFetch);
+  assert.strictEqual(map.size, 1);        // only the second (1-card) batch succeeded
+  assert.strictEqual(map.has("card75"), true);
+});

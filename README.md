@@ -52,4 +52,6 @@ connection. Requires Chrome 111+.
 
 Note: the log identifies cards by name, so two different physical copies of the
 same card name within a single booster can't be told apart — at worst this slightly
-mis-attributes a duplicate common in the "didn't wheel" panel.
+mis-attributes a duplicate common in the "didn't wheel" panel. Wheel detection uses
+the pod size from the log's player list (as Draftmancer exports it); a hand-edited
+or non-standard log with an inaccurate player list may mis-detect wheels.
