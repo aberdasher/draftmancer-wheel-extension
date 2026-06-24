@@ -82,3 +82,15 @@ test("ignores draftState with an empty/absent booster", () => {
   cap.onDraftState({ boosterNumber: 0, pickNumber: 0 });
   assert.deepStrictEqual(cap.getDraft(), { player: null, picks: [] });
 });
+
+test("records burnedIndices when burnedCards present, omits when absent", () => {
+  const cap = createDraftCapture();
+  cap.onDraftState({ boosterNumber: 0, pickNumber: 0, booster: [{ name: "A", uniqueID: 1 }, { name: "B", uniqueID: 2 }, { name: "C", uniqueID: 3 }] });
+  cap.onPickCard({ pickedCards: [0], burnedCards: [1] });
+  cap.onDraftState({ boosterNumber: 0, pickNumber: 1, booster: [{ name: "D", uniqueID: 4 }] });
+  cap.onPickCard({ pickedCards: [0] }); // no burns
+  const picks = cap.getDraft().picks;
+  assert.deepStrictEqual(picks[0].pickedIndices, [0]);
+  assert.deepStrictEqual(picks[0].burnedIndices, [1]);
+  assert.strictEqual("burnedIndices" in picks[1], false);
+});

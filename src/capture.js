@@ -21,12 +21,15 @@ function createDraftCapture() {
   function onPickCard(payload) {
     if (!current || !payload) return getDraft();
     const indices = Array.isArray(payload.pickedCards) ? payload.pickedCards.slice() : [];
-    picks.push({
+    const burned = Array.isArray(payload.burnedCards) ? payload.burnedCards.slice() : [];
+    const pick = {
       packNum: current.boosterNumber + 1,
       pickNum: current.pickNumber + 1,
       cards: current.booster.map(mapCard),
       pickedIndices: indices,
-    });
+    };
+    if (burned.length) pick.burnedIndices = burned; // omit when empty so existing capture tests' exact shapes still hold
+    picks.push(pick);
     return getDraft();
   }
 

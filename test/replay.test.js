@@ -66,3 +66,17 @@ test("uses real uniqueIDs when present (captured drafts), wheel without players"
   // At pick 3 the pack (A,B,C) returns as {B}: C didn't wheel; A excluded as own pick.
   assert.deepStrictEqual(steps[2].didntWheel.map((c) => c.name), ["C"]);
 });
+
+test("a burned card (captured) is excluded from didntWheel", () => {
+  const parsed = {
+    player: null,
+    picks: [
+      { packNum: 1, pickNum: 1, cards: [{ name: "A", uniqueID: 1 }, { name: "B", uniqueID: 2 }, { name: "C", uniqueID: 3 }, { name: "D", uniqueID: 4 }], pickedIndices: [0], burnedIndices: [1] },
+      { packNum: 1, pickNum: 2, cards: [{ name: "E", uniqueID: 5 }, { name: "F", uniqueID: 6 }], pickedIndices: [0] },
+      { packNum: 1, pickNum: 3, cards: [{ name: "C", uniqueID: 3 }], pickedIndices: [0] }, // pack 1 returns as {C}
+    ],
+  };
+  const { steps } = buildReplay(parsed);
+  // pack1 {A,B,C,D} returns as {C}: D didn't wheel; A is own pick; B is own BURN (excluded).
+  assert.deepStrictEqual(steps[2].didntWheel.map((c) => c.name), ["D"]);
+});

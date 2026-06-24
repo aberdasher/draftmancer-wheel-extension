@@ -7,6 +7,7 @@
 
   // Draft capture (createDraftCapture is a content-script global from capture.js).
   const capture = createDraftCapture();
+  let sawCleanStart = false;
   function persistDraft() {
     try {
       const area = (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) || null;
@@ -85,14 +86,18 @@
     if (!msg || msg.source !== "dm-wheel") return;
     if (msg.event === "draftState") {
       render(tracker.handleDraftState(msg.args[0]));
-      try { capture.onDraftState(msg.args[0]); } catch (_e) { /* ignore */ }
+      try {
+        const ds = msg.args[0];
+        if (ds && ds.boosterNumber === 0 && ds.pickNumber === 0) sawCleanStart = true;
+        capture.onDraftState(ds);
+      } catch (_e) { /* ignore */ }
     } else if (msg.event === "rejoinDraft") {
       const data = msg.args[0] || {};
       render(tracker.handleRejoin(data.state || {}));
       try { capture.onDraftState(data.state || {}); } catch (_e) { /* ignore */ }
     } else if (msg.event === "pickCard") {
       tracker.handlePickCard(msg.args[0]);
-      try { capture.onPickCard(msg.args[0]); persistDraft(); } catch (_e) { /* ignore */ }
+      try { capture.onPickCard(msg.args[0]); if (sawCleanStart) persistDraft(); } catch (_e) { /* ignore */ }
     }
   });
 })();

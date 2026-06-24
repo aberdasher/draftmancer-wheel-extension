@@ -73,7 +73,7 @@ function buildReplay(parsed) {
     for (const idx of p.pickedIndices) {
       if (p.cards[idx]) deckSoFar.push(ref(p.cards[idx]));
     }
-    tracker.handlePickCard({ pickedCards: p.pickedIndices });
+    tracker.handlePickCard({ pickedCards: p.pickedIndices, burnedCards: p.burnedIndices || [] });
 
     steps.push({ packNum: p.packNum, pickNum: p.pickNum, cards, didntWheel, deckSoFar: deckBefore });
   }
