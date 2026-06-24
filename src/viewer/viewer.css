@@ -143,6 +143,7 @@ button:disabled {
    relative to width; card art aspect ≈ 1.4× width, so ~-1.18 reveals the top). */
 .dmw-stack .dmw-card {
   width: 100%;
+  position: relative; /* establish stacking context so hover z-index applies */
 }
 .dmw-stack .dmw-card:not(:first-child) {
   margin-top: -118%;
