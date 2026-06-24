@@ -5,6 +5,18 @@
   // Wheel tracker (createWheelTracker is a content-script global from wheel-core.js).
   const tracker = createWheelTracker();
 
+  // Draft capture (createDraftCapture is a content-script global from capture.js).
+  const capture = createDraftCapture();
+  function persistDraft() {
+    try {
+      const area = (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) || null;
+      if (!area) return;
+      area.set({ dmwLastDraft: Object.assign({ capturedAt: Date.now() }, capture.getDraft()) });
+    } catch (_e) {
+      /* never break the sidebar */
+    }
+  }
+
   // 3. Sidebar.
   let root = null;
   let body = null;
@@ -73,11 +85,14 @@
     if (!msg || msg.source !== "dm-wheel") return;
     if (msg.event === "draftState") {
       render(tracker.handleDraftState(msg.args[0]));
+      try { capture.onDraftState(msg.args[0]); } catch (_e) { /* ignore */ }
     } else if (msg.event === "rejoinDraft") {
       const data = msg.args[0] || {};
       render(tracker.handleRejoin(data.state || {}));
+      try { capture.onDraftState(data.state || {}); } catch (_e) { /* ignore */ }
     } else if (msg.event === "pickCard") {
       tracker.handlePickCard(msg.args[0]);
+      try { capture.onPickCard(msg.args[0]); persistDraft(); } catch (_e) { /* ignore */ }
     }
   });
 })();
