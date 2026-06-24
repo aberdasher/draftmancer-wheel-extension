@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "description": "Shows which cards from a pack did not wheel back to you during a Draftmancer draft.",
   "minimum_chrome_version": "111",
+  "action": { "default_title": "Draftmancer Draft Log Replay" },
+  "background": { "service_worker": "background.js" },
+  "host_permissions": ["https://api.scryfall.com/*"],
   "content_scripts": [
     {
       "matches": ["https://draftmancer.com/*", "https://www.draftmancer.com/*"],

@@ -1,0 +1,103 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #16181c;
+  color: #eee;
+}
+#dmw-landing,
+#dmw-replay {
+  padding: 16px;
+}
+#dmw-landing textarea {
+  width: 100%;
+  max-width: 700px;
+  display: block;
+  margin: 8px 0;
+  background: #0e0f12;
+  color: #eee;
+  border: 1px solid #444;
+  border-radius: 4px;
+}
+button {
+  background: #2a6;
+  color: #fff;
+  border: 0;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.dmw-error {
+  color: #f77;
+  margin-top: 8px;
+  min-height: 1em;
+}
+#dmw-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  background: #16181c;
+  padding: 8px 0;
+  border-bottom: 1px solid #333;
+}
+#dmw-notice {
+  opacity: 0.8;
+  font-size: 13px;
+}
+.dmw-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.dmw-card {
+  width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.dmw-card img {
+  width: 100%;
+  border-radius: 5px;
+  transition: transform 0.1s;
+}
+.dmw-card img:hover {
+  transform: scale(1.6);
+  position: relative;
+  z-index: 5;
+}
+.dmw-card.dmw-picked img {
+  outline: 3px solid #2a6;
+  outline-offset: 1px;
+}
+.dmw-cardname {
+  font-size: 12px;
+  padding: 2px;
+}
+#dmw-wheel-section h2 {
+  color: #f9a;
+}
+.dmw-curve {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.dmw-col {
+  flex: 1;
+  min-width: 90px;
+}
+.dmw-col-head {
+  font-weight: bold;
+  border-bottom: 1px solid #444;
+  margin-bottom: 4px;
+  text-align: center;
+}
+.dmw-col .dmw-card {
+  width: 100%;
+  margin-bottom: 4px;
+}
