@@ -1,7 +1,7 @@
 {
   "name": "draftmancer-wheel-extension",
   "version": "0.1.0",
-  "description": "Chrome extension showing which cards did not wheel in a Draftmancer draft.",
+  "description": "Chrome extension for Draftmancer: live 'didn't wheel' detection plus a pick-by-pick draft-log replay viewer.",
   "private": true,
   "type": "commonjs",
   "scripts": {

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Draftmancer Didn't Wheel",
   "version": "0.1.0",
-  "description": "Shows which cards from a pack did not wheel back to you during a Draftmancer draft.",
+  "description": "Highlights which cards didn't wheel during a live Draftmancer draft, plus a pick-by-pick replay viewer for exported draft logs.",
   "minimum_chrome_version": "111",
   "icons": {
     "16": "icons/icon16.png",
