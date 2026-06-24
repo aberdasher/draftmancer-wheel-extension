@@ -4,7 +4,10 @@
 // rounds ids differ (packNum differs). Caveat: two distinct physical copies of
 // the same name within one pack round collide — rare, at worst a slight
 // mis-attribution of a duplicate common in the wheel panel.
-const createWheelTracker =
+// Named distinctly from wheel-core's global `createWheelTracker`: on the viewer
+// page these files load as classic scripts sharing one global scope, so a
+// top-level `const createWheelTracker` here would redeclare that global and throw.
+const createTracker =
   typeof require === "function"
     ? require("../wheel-core.js").createWheelTracker
     : globalThis.createWheelTracker;
@@ -17,7 +20,7 @@ function ref(card) {
 }
 
 function buildReplay(parsed) {
-  const tracker = createWheelTracker();
+  const tracker = createTracker();
   const steps = [];
   const deckSoFar = [];
   const idByKey = new Map();
