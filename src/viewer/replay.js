@@ -26,9 +26,18 @@ function buildReplay(parsed) {
   const idByKey = new Map();
   let nextId = 1;
 
+  const podSize = parsed.players && parsed.players.length ? parsed.players.length : 0;
+
   for (const p of parsed.picks) {
+    // A pack you see at pickNum P is the same physical pack you first saw at
+    // ((P-1) % podSize). Keying the synthetic id on this lineage (not just the
+    // card name) stops different packs in the same round that share a common
+    // card from being mistaken for the same pack. podSize 0 (unknown players) →
+    // every pick is its own pack, so no wheels are reported (safe degrade).
+    const lineage = podSize > 0 ? (p.pickNum - 1) % podSize : p.pickNum;
+
     const booster = p.cards.map((c) => {
-      const key = p.packNum + " " + c.name;
+      const key = p.packNum + " " + lineage + " " + c.name;
       let id = idByKey.get(key);
       if (id === undefined) {
         id = nextId++;

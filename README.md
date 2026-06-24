@@ -51,5 +51,5 @@ Card images and data are fetched from Scryfall, so the viewer needs an internet
 connection. Requires Chrome 111+.
 
 Note: the log identifies cards by name, so two different physical copies of the
-same card name within one pack round can't be told apart — at worst this slightly
+same card name within a single booster can't be told apart — at worst this slightly
 mis-attributes a duplicate common in the "didn't wheel" panel.

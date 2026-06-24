@@ -6,6 +6,7 @@ function parseDraftLog(text) {
   const lines = text.split(/\r?\n/);
 
   let player = null;
+  const players = [];
   let inPlayers = false;
   const picks = [];
   let current = null;
@@ -28,8 +29,11 @@ function parseDraftLog(text) {
       continue;
     }
     if (inPlayers) {
-      const m = line.match(/^-->\s+(.*\S)/);
-      if (m && player === null) player = m[1];
+      const pm = line.match(/^(?:-->|\s{2,})\s*(.*\S)/);
+      if (pm) {
+        players.push(pm[1]);
+        if (/^-->/.test(line) && player === null) player = pm[1];
+      }
       continue;
     }
     if (current) {
@@ -54,7 +58,7 @@ function parseDraftLog(text) {
   if (picks.length === 0) {
     throw new Error("No 'Pack X pick Y' blocks found — is this a Draftmancer MTGO/MagicProTools draft log?");
   }
-  return { player, picks };
+  return { player, players, picks };
 }
 
 if (typeof module !== "undefined" && module.exports) module.exports = { parseDraftLog };

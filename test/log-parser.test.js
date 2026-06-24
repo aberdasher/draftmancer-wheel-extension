@@ -57,6 +57,12 @@ test("throws a clear error when there are no pick blocks", () => {
   assert.throws(() => parseDraftLog("just some text\nwith no packs"), /Pack .* pick/i);
 });
 
+test("collects all players in the Players block plus the owner", () => {
+  const { player, players } = parseDraftLog(LOG);
+  assert.strictEqual(player, "Me");
+  assert.deepStrictEqual(players, ["Me", "Bot 1"]);
+});
+
 test("a banner line ends the current pick block even with no blank line before it", () => {
   const log = `Players:
 --> Me
