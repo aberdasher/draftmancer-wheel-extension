@@ -203,7 +203,9 @@
   }
 
   function onLastDraftChanged(changes, area) {
-    if (area !== "local" || !changes.dmwLastDraft || !following || !replay) return;
+    if (area !== "local" || !changes.dmwLastDraft) return;
+    refreshLastDraftButton(); // keep the landing button's label/enabled state current as picks are captured
+    if (!following || !replay) return;
     const draft = changes.dmwLastDraft.newValue;
     if (!draft || !draft.picks || draft.picks.length === 0) return;
     const wasAtEnd = stepIndex === replay.steps.length - 1;
