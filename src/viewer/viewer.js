@@ -4,10 +4,10 @@
   let replay = null; // { player, steps }
   let stepIndex = 0;
   let cardData = new Map(); // nameLowercased -> { imageUrl, cmc, colors, typeLine, name }
-  let hidePick = true; // "Hide my pick" toggle (default on — start with the pick hidden)
+  let hidePick = Prefs.DEFAULTS.hidePick; // "Hide my pick" (persisted)
   let revealed = false; // whether the current step's pick has been revealed
-  let deckSort = "cmc"; // "cmc" | "color"
-  let splitCreatures = false;
+  let deckSort = Prefs.DEFAULTS.deckSort; // "cmc" | "color" (persisted)
+  let splitCreatures = Prefs.DEFAULTS.splitCreatures; // (persisted)
 
   const $ = (id) => document.getElementById(id);
 
@@ -161,6 +161,16 @@
   }
 
   function init() {
+    Prefs.loadPrefs((prefs) => {
+      hidePick = prefs.hidePick;
+      deckSort = prefs.deckSort;
+      splitCreatures = prefs.splitCreatures;
+      $("dmw-hidepick").checked = hidePick;
+      $("dmw-split").checked = splitCreatures;
+      $("dmw-sort-cmc").classList.toggle("dmw-active", deckSort === "cmc");
+      $("dmw-sort-color").classList.toggle("dmw-active", deckSort === "color");
+      if (replay) renderStep();
+    });
     $("dmw-load").addEventListener("click", () => {
       const file = $("dmw-file").files[0];
       if (file) file.text().then(load).catch((e) => ($("dmw-error").textContent = e.message));
@@ -175,6 +185,7 @@
     $("dmw-hidepick").addEventListener("change", (e) => {
       hidePick = e.target.checked;
       revealed = false; // re-hide on toggle
+      Prefs.savePref("hidePick", hidePick);
       if (replay) renderStep();
     });
     $("dmw-reveal").addEventListener("click", () => {
@@ -186,12 +197,14 @@
       deckSort = mode;
       $("dmw-sort-cmc").classList.toggle("dmw-active", mode === "cmc");
       $("dmw-sort-color").classList.toggle("dmw-active", mode === "color");
+      Prefs.savePref("deckSort", mode);
       if (replay) renderStep();
     }
     $("dmw-sort-cmc").addEventListener("click", () => setSort("cmc"));
     $("dmw-sort-color").addEventListener("click", () => setSort("color"));
     $("dmw-split").addEventListener("change", (e) => {
       splitCreatures = e.target.checked;
+      Prefs.savePref("splitCreatures", splitCreatures);
       if (replay) renderStep();
     });
   }
