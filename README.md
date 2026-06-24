@@ -35,3 +35,21 @@ since the previous lap.
 Run the unit tests for the pure logic (frame parsing + wheel matching):
 
     npm test
+
+## Draft Log Replay viewer
+
+Click the extension's toolbar icon to open the replay viewer in a new tab. Upload
+or paste a Draftmancer draft log exported in **MTGO / MagicProTools** format, then
+step through your draft pick by pick with the on-screen buttons or the ← / →
+arrow keys. Each step shows:
+
+- the booster you faced, with your pick highlighted,
+- which cards did not wheel back when a pack returns to you,
+- your deck so far, grouped into mana-curve columns.
+
+Card images and data are fetched from Scryfall, so the viewer needs an internet
+connection. Requires Chrome 111+.
+
+Note: the log identifies cards by name, so two different physical copies of the
+same card name within one pack round can't be told apart — at worst this slightly
+mis-attributes a duplicate common in the "didn't wheel" panel.
