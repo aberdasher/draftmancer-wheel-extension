@@ -37,11 +37,16 @@ function buildReplay(parsed) {
     const lineage = podSize > 0 ? (p.pickNum - 1) % podSize : p.pickNum;
 
     const booster = p.cards.map((c) => {
-      const key = p.packNum + " " + lineage + " " + c.name;
-      let id = idByKey.get(key);
-      if (id === undefined) {
-        id = nextId++;
-        idByKey.set(key, id);
+      let id;
+      if (typeof c.uniqueID === "number") {
+        id = c.uniqueID; // captured drafts carry real, table-stable uniqueIDs
+      } else {
+        const key = p.packNum + " " + lineage + " " + c.name;
+        id = idByKey.get(key);
+        if (id === undefined) {
+          id = nextId++;
+          idByKey.set(key, id);
+        }
       }
       const item = { uniqueID: id, name: c.name };
       if (c.set) item.set = c.set;

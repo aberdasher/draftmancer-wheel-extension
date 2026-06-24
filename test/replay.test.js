@@ -51,3 +51,18 @@ test("a common shared between two different first-lap packs does not trigger a f
   const { steps } = buildReplay(parsed);
   assert.strictEqual(steps[1].didntWheel, null); // different pack, shared "Common" must NOT be a wheel
 });
+
+test("uses real uniqueIDs when present (captured drafts), wheel without players", () => {
+  // No `players` field; cards carry real uniqueIDs (as captured live).
+  const parsed = {
+    player: null,
+    picks: [
+      { packNum: 1, pickNum: 1, cards: [{ name: "A", uniqueID: 1 }, { name: "B", uniqueID: 2 }, { name: "C", uniqueID: 3 }], pickedIndices: [0] },
+      { packNum: 1, pickNum: 2, cards: [{ name: "D", uniqueID: 4 }, { name: "E", uniqueID: 5 }], pickedIndices: [0] },
+      { packNum: 1, pickNum: 3, cards: [{ name: "B", uniqueID: 2 }], pickedIndices: [0] }, // pack 1 returns; B same uniqueID
+    ],
+  };
+  const { steps } = buildReplay(parsed);
+  // At pick 3 the pack (A,B,C) returns as {B}: C didn't wheel; A excluded as own pick.
+  assert.deepStrictEqual(steps[2].didntWheel.map((c) => c.name), ["C"]);
+});
