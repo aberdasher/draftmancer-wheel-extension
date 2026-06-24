@@ -4,7 +4,7 @@
   let replay = null; // { player, steps }
   let stepIndex = 0;
   let cardData = new Map(); // nameLowercased -> { imageUrl, cmc, colors, typeLine, name }
-  let hidePick = false; // "Hide my pick" toggle
+  let hidePick = true; // "Hide my pick" toggle (default on — start with the pick hidden)
   let revealed = false; // whether the current step's pick has been revealed
   let deckSort = "cmc"; // "cmc" | "color"
   let splitCreatures = false;
