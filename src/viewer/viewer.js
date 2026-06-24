@@ -6,9 +6,10 @@
   let cardData = new Map(); // nameLowercased -> { imageUrl, cmc, colors, typeLine, name }
   let hidePick = false; // "Hide my pick" toggle
   let revealed = false; // whether the current step's pick has been revealed
+  let deckSort = "cmc"; // "cmc" | "color"
+  let splitCreatures = false;
 
   const $ = (id) => document.getElementById(id);
-  const COLUMNS = ["0", "1", "2", "3", "4", "5", "6+"];
 
   function dataFor(name) {
     return cardData.get(name.toLowerCase());
@@ -33,35 +34,61 @@
     return div;
   }
 
-  function columnFor(name) {
-    const d = dataFor(name);
-    if (!d) return "?";
-    if (d.cmc >= 6) return "6+";
-    return String(Math.floor(d.cmc));
+  // Merge a deck card ref with its Scryfall data so DeckLayout can group it.
+  function enrichDeck(deck) {
+    return deck.map((c) => {
+      const d = dataFor(c.name);
+      return {
+        name: c.name,
+        set: c.set,
+        collector: c.collector,
+        cmc: d ? d.cmc : 0,
+        colors: d ? d.colors : [],
+        typeLine: d ? d.typeLine : "",
+      };
+    });
   }
 
-  function renderCurve(deck) {
-    const curve = $("dmw-curve");
-    curve.innerHTML = "";
-    const cols = {};
-    for (const label of COLUMNS) cols[label] = [];
-    const unknown = [];
-    for (const c of deck) {
-      const col = columnFor(c.name);
-      if (col === "?") unknown.push(c);
-      else cols[col].push(c);
-    }
-    const labels = unknown.length ? COLUMNS.concat(["?"]) : COLUMNS;
-    for (const label of labels) {
-      const list = label === "?" ? unknown : cols[label];
+  function renderColumns(container, cards) {
+    for (const col of DeckLayout.columnize(cards, deckSort)) {
       const colEl = document.createElement("div");
       colEl.className = "dmw-col";
       const head = document.createElement("div");
       head.className = "dmw-col-head";
-      head.textContent = `${label} (${list.length})`;
+      head.textContent = `${col.label} (${col.cards.length})`;
       colEl.appendChild(head);
-      list.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach((c) => colEl.appendChild(cardEl(c, false)));
-      curve.appendChild(colEl);
+      const stack = document.createElement("div");
+      stack.className = "dmw-stack";
+      col.cards.forEach((c) => stack.appendChild(cardEl(c, false)));
+      colEl.appendChild(stack);
+      container.appendChild(colEl);
+    }
+  }
+
+  function renderDeck(deck) {
+    const enriched = enrichDeck(deck);
+    const root = $("dmw-deck");
+    root.innerHTML = "";
+    if (splitCreatures) {
+      const { creatures, others } = DeckLayout.splitByCreature(enriched);
+      for (const [label, group] of [["Creatures", creatures], ["Non-creatures", others]]) {
+        const row = document.createElement("div");
+        row.className = "dmw-deck-row";
+        const h = document.createElement("div");
+        h.className = "dmw-row-head";
+        h.textContent = `${label} (${group.length})`;
+        row.appendChild(h);
+        const cols = document.createElement("div");
+        cols.className = "dmw-cols";
+        renderColumns(cols, group);
+        row.appendChild(cols);
+        root.appendChild(row);
+      }
+    } else {
+      const cols = document.createElement("div");
+      cols.className = "dmw-cols";
+      renderColumns(cols, enriched);
+      root.appendChild(cols);
     }
   }
 
@@ -91,7 +118,7 @@
     }
 
     $("dmw-deck-title").textContent = `Your deck so far (${step.deckSoFar.length})`;
-    renderCurve(step.deckSoFar);
+    renderDeck(step.deckSoFar);
   }
 
   function go(delta) {
@@ -154,6 +181,18 @@
       if (!replay) return;
       revealed = true;
       renderStep();
+    });
+    function setSort(mode) {
+      deckSort = mode;
+      $("dmw-sort-cmc").classList.toggle("dmw-active", mode === "cmc");
+      $("dmw-sort-color").classList.toggle("dmw-active", mode === "color");
+      if (replay) renderStep();
+    }
+    $("dmw-sort-cmc").addEventListener("click", () => setSort("cmc"));
+    $("dmw-sort-color").addEventListener("click", () => setSort("color"));
+    $("dmw-split").addEventListener("change", (e) => {
+      splitCreatures = e.target.checked;
+      if (replay) renderStep();
     });
   }
 
