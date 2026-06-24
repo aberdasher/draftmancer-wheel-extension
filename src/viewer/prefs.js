@@ -32,8 +32,9 @@ function savePref(key, value) {
   if (!area) return;
   area.get("dmwPrefs", (data) => {
     const merged = mergePrefs(data && data.dmwPrefs);
-    merged[key] = value;
-    area.set({ dmwPrefs: merged });
+    // Re-validate the candidate so an invalid/unknown (key, value) never lands in
+    // storage (mergePrefs drops bad types and unknown keys).
+    area.set({ dmwPrefs: mergePrefs({ ...merged, [key]: value }) });
   });
 }
 
