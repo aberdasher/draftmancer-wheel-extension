@@ -305,6 +305,24 @@
     });
   }
 
+  // When opened via the sidebar's "Open replay" button (viewer.html?open=current),
+  // jump straight to the newest captured draft instead of the landing list.
+  function maybeAutoOpen() {
+    let params;
+    try {
+      params = new URLSearchParams(location.search);
+    } catch (_e) {
+      return;
+    }
+    if (params.get("open") !== "current") return;
+    const area = storageLocal();
+    if (!area) return;
+    area.get("dmwDrafts", (data) => {
+      const list = Array.isArray(data.dmwDrafts) ? data.dmwDrafts : [];
+      if (list.length && list[0] && list[0].draftId != null) openDraft(list[0].draftId);
+    });
+  }
+
   function init() {
     try {
       const v = typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.getManifest && chrome.runtime.getManifest().version;
@@ -368,6 +386,7 @@
       Prefs.savePref("splitCreatures", splitCreatures);
       if (replay) renderStep();
     });
+    maybeAutoOpen();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
