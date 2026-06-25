@@ -94,3 +94,37 @@ test("records burnedIndices when burnedCards present, omits when absent", () => 
   assert.deepStrictEqual(picks[0].burnedIndices, [1]);
   assert.strictEqual("burnedIndices" in picks[1], false);
 });
+
+test("tracks sideboard via moveCard / moveAll / swap and includes it only when non-empty", () => {
+  const cap = createDraftCapture();
+  cap.onDraftState({ boosterNumber: 0, pickNumber: 0, booster: [{ name: "A", uniqueID: 1 }, { name: "B", uniqueID: 2 }] });
+  cap.onPickCard({ pickedCards: [0] }); // pick A(1)
+  cap.onDraftState({ boosterNumber: 0, pickNumber: 1, booster: [{ name: "C", uniqueID: 3 }] });
+  cap.onPickCard({ pickedCards: [0] }); // pick C(3)
+  assert.strictEqual("sideboard" in cap.getDraft(), false); // none yet
+
+  cap.onMoveCard(1, "side");
+  assert.deepStrictEqual(cap.getDraft().sideboard, [1]);
+  cap.onMoveCard(1, "main");
+  assert.strictEqual("sideboard" in cap.getDraft(), false);
+
+  cap.onMoveAllToSideboard(); // all picked -> side
+  assert.deepStrictEqual(cap.getDraft().sideboard.slice().sort(), [1, 3]);
+  cap.onSwapDeckAndSideboard(); // complement of {1,3} among picked {1,3} = empty
+  assert.strictEqual("sideboard" in cap.getDraft(), false);
+});
+
+test("a new draft (0/0) clears the sideboard", () => {
+  const cap = createDraftCapture();
+  cap.onDraftState({ boosterNumber: 0, pickNumber: 0, booster: [{ name: "A", uniqueID: 1 }] });
+  cap.onPickCard({ pickedCards: [0] });
+  cap.onMoveCard(1, "side");
+  cap.onDraftState({ boosterNumber: 0, pickNumber: 0, booster: [{ name: "Z", uniqueID: 9 }] }); // new draft
+  assert.strictEqual("sideboard" in cap.getDraft(), false);
+});
+
+test("onRejoinZones seeds the sideboard from pickedCards.side", () => {
+  const cap = createDraftCapture();
+  cap.onRejoinZones({ main: [{ uniqueID: 1 }], side: [{ uniqueID: 2 }, { uniqueID: 3 }] });
+  assert.deepStrictEqual(cap.getDraft().sideboard.slice().sort(), [2, 3]);
+});
