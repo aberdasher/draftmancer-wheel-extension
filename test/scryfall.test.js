@@ -19,7 +19,7 @@ test("chunk splits into batches of the given size", () => {
 test("toCardData reads image_uris, falling back to the first face", () => {
   assert.deepStrictEqual(
     toCardData({ name: "A", cmc: 3, image_uris: { normal: "a.jpg" }, type_line: "Creature", colors: ["G"] }),
-    { name: "A", imageUrl: "a.jpg", cmc: 3, colors: ["G"], typeLine: "Creature" }
+    { name: "A", imageUrl: "a.jpg", cmc: 3, colors: ["G"], typeLine: "Creature", manaCost: "" }
   );
   const dfc = toCardData({
     name: "B // C",
@@ -88,4 +88,13 @@ test("filterUnknown works with a Map keyed by lowercased name", () => {
   const known = new Map([["opt", { name: "Opt" }]]);
   const out = Scryfall.filterUnknown([{ name: "Opt" }, { name: "Bolt" }], known);
   assert.deepStrictEqual(out.map((c) => c.name), ["Bolt"]);
+});
+
+test("toCardData includes manaCost from mana_cost or the first face", () => {
+  assert.strictEqual(toCardData({ name: "A", mana_cost: "{1}{W}" }).manaCost, "{1}{W}");
+  assert.strictEqual(
+    toCardData({ name: "B // C", card_faces: [{ mana_cost: "{U}", image_uris: { normal: "b.jpg" } }] }).manaCost,
+    "{U}"
+  );
+  assert.strictEqual(toCardData({ name: "X" }).manaCost, "");
 });

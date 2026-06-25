@@ -38,6 +38,7 @@ function toCardData(card) {
     cmc: typeof card.cmc === "number" ? card.cmc : 0,
     colors: card.colors || (face && face.colors) || [],
     typeLine: card.type_line || "",
+    manaCost: card.mana_cost || (face && face.mana_cost) || "",
   };
 }
 
