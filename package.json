@@ -1,6 +1,6 @@
 {
   "name": "draftmancer-wheel-extension",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Chrome extension for Draftmancer: live 'didn't wheel' detection plus a pick-by-pick draft-log replay viewer.",
   "private": true,
   "type": "commonjs",
