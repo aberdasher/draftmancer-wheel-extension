@@ -274,6 +274,13 @@
     refreshHistory();
     const area = (typeof chrome !== "undefined" && chrome.storage && chrome.storage.onChanged) || null;
     if (area) chrome.storage.onChanged.addListener(onDraftsChanged);
+    $("dmw-back").addEventListener("click", () => {
+      following = false; // returning to the list stops live-follow
+      viewedDraftId = null;
+      $("dmw-replay").hidden = true;
+      $("dmw-landing").hidden = false;
+      refreshHistory();
+    });
     $("dmw-prev").addEventListener("click", () => go(-1));
     $("dmw-next").addEventListener("click", () => go(1));
     document.addEventListener("keydown", (e) => {
