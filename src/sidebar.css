@@ -30,3 +30,17 @@
 .dmw-card img { width: 100%; border-radius: 4px; }
 .dmw-card span { margin-top: 2px; font-size: 11px; line-height: 1.1; }
 .dmw-empty { opacity: 0.7; font-style: italic; }
+#dmw-open-replay {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  background: #2a6;
+  color: #fff;
+  border: 0;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+#dmw-sidebar.dmw-collapsed #dmw-open-replay {
+  display: none;
+}

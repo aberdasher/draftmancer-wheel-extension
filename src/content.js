@@ -44,9 +44,21 @@
     header = document.createElement("div");
     header.className = "dmw-header";
     header.addEventListener("click", () => root.classList.toggle("dmw-collapsed"));
+    const openBtn = document.createElement("button");
+    openBtn.id = "dmw-open-replay";
+    openBtn.textContent = "Open replay ↗";
+    openBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      try {
+        chrome.runtime.sendMessage({ type: "openViewer" });
+      } catch (_e) {
+        /* never break the sidebar */
+      }
+    });
     body = document.createElement("div");
     body.className = "dmw-body";
     root.appendChild(header);
+    root.appendChild(openBtn);
     root.appendChild(body);
     document.body.appendChild(root);
   }
