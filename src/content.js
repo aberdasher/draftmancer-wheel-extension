@@ -111,10 +111,19 @@
     } else if (msg.event === "rejoinDraft") {
       const data = msg.args[0] || {};
       render(tracker.handleRejoin(data.state || {}));
-      try { capture.onDraftState(data.state || {}); } catch (_e) { /* ignore */ }
+      try {
+        capture.onDraftState(data.state || {});
+        capture.onRejoinZones(data.pickedCards);
+      } catch (_e) { /* ignore */ }
     } else if (msg.event === "pickCard") {
       tracker.handlePickCard(msg.args[0]);
       try { capture.onPickCard(msg.args[0]); if (sawCleanStart) persistDraft(); } catch (_e) { /* ignore */ }
+    } else if (msg.event === "moveCard") {
+      try { capture.onMoveCard(msg.args[0], msg.args[1]); if (sawCleanStart) persistDraft(); } catch (_e) { /* ignore */ }
+    } else if (msg.event === "moveAllToSideboard") {
+      try { capture.onMoveAllToSideboard(); if (sawCleanStart) persistDraft(); } catch (_e) { /* ignore */ }
+    } else if (msg.event === "swapDeckAndSideboard") {
+      try { capture.onSwapDeckAndSideboard(); if (sawCleanStart) persistDraft(); } catch (_e) { /* ignore */ }
     }
   });
 })();

@@ -1,7 +1,7 @@
 // Runs in the page's JS world. Wraps WebSocket to observe socket.io frames and
 // forwards the relevant draft events to the content script via postMessage.
 (function () {
-  const FORWARD = new Set(["draftState", "rejoinDraft", "pickCard"]);
+  const FORWARD = new Set(["draftState", "rejoinDraft", "pickCard", "moveCard", "moveAllToSideboard", "swapDeckAndSideboard"]);
 
   function forward(data) {
     try {
