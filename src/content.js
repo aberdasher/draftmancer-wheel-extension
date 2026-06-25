@@ -15,13 +15,17 @@
       if (!area) return;
       const entry = Object.assign({ draftId: currentDraftId, capturedAt: Date.now() }, capture.getDraft());
       area.get(["dmwDrafts", "dmwLastDraft"], (data) => {
-        let list = Array.isArray(data.dmwDrafts) ? data.dmwDrafts : [];
-        // one-time migration: seed the list from a legacy single-slot capture
-        if (list.length === 0 && data.dmwLastDraft && data.dmwLastDraft.picks && data.dmwLastDraft.picks.length) {
-          const legacy = data.dmwLastDraft;
-          list = [Object.assign({ draftId: legacy.capturedAt || 0 }, legacy)];
+        try {
+          let list = Array.isArray(data.dmwDrafts) ? data.dmwDrafts : [];
+          // one-time migration: seed the list from a legacy single-slot capture
+          if (list.length === 0 && data.dmwLastDraft && data.dmwLastDraft.picks && data.dmwLastDraft.picks.length) {
+            const legacy = data.dmwLastDraft;
+            list = [Object.assign({ draftId: legacy.capturedAt || 0 }, legacy)];
+          }
+          area.set({ dmwDrafts: DraftHistory.upsertCurrent(list, entry, 3) });
+        } catch (_e) {
+          /* never break the sidebar (async callback) */
         }
-        area.set({ dmwDrafts: DraftHistory.upsertCurrent(list, entry, 3) });
       });
     } catch (_e) {
       /* never break the sidebar */
