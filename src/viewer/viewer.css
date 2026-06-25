@@ -151,3 +151,17 @@ button:disabled {
 .dmw-stack .dmw-card:hover {
   z-index: 10;
 }
+.dmw-history-label {
+  font-size: 13px;
+  opacity: 0.8;
+  margin: 8px 0 4px;
+}
+#dmw-history {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 480px;
+}
+.dmw-history-row {
+  text-align: left;
+}

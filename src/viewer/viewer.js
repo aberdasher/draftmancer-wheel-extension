@@ -9,6 +9,7 @@
   let deckSort = Prefs.DEFAULTS.deckSort; // "cmc" | "color" (persisted)
   let splitCreatures = Prefs.DEFAULTS.splitCreatures; // (persisted)
   let following = false; // viewer is tracking the live-captured draft
+  let viewedDraftId = null; // draftId of the history entry currently open
 
   const $ = (id) => document.getElementById(id);
 
@@ -166,6 +167,7 @@
       return;
     }
     following = false; // loading an external log exits follow mode
+    viewedDraftId = null;
     stepIndex = 0;
     revealed = false;
     cardData = new Map();
@@ -176,20 +178,23 @@
     renderStep();
   }
 
-  function loadLastDraft() {
+  function openDraft(draftId) {
     $("dmw-error").textContent = "";
     const area = storageLocal();
     if (!area) {
       $("dmw-error").textContent = "Storage unavailable.";
       return;
     }
-    area.get("dmwLastDraft", async (data) => {
-      const draft = data && data.dmwLastDraft;
+    area.get("dmwDrafts", async (data) => {
+      const list = Array.isArray(data.dmwDrafts) ? data.dmwDrafts : [];
+      const draft = DraftHistory.findById(list, draftId);
       if (!draft || !draft.picks || draft.picks.length === 0) {
-        $("dmw-error").textContent = "No saved draft yet — draft on draftmancer.com first.";
+        $("dmw-error").textContent = "That draft is no longer available.";
+        refreshHistory();
         return;
       }
-      following = true;
+      viewedDraftId = draftId;
+      following = !!(list[0] && list[0].draftId === draftId); // only the current (newest) draft live-follows
       replay = buildReplay(draft);
       stepIndex = replay.steps.length - 1; // jump to the latest pick
       revealed = false;
@@ -202,12 +207,18 @@
     });
   }
 
-  function onLastDraftChanged(changes, area) {
-    if (area !== "local" || !changes.dmwLastDraft) return;
-    refreshLastDraftButton(); // keep the landing button's label/enabled state current as picks are captured
-    if (!following || !replay) return;
-    const draft = changes.dmwLastDraft.newValue;
-    if (!draft || !draft.picks || draft.picks.length === 0) return;
+  function onDraftsChanged(changes, area) {
+    if (area !== "local" || !changes.dmwDrafts) return;
+    refreshHistory(); // keep the landing list current as drafts are captured
+    if (!following || !replay || viewedDraftId == null) return;
+    const list = changes.dmwDrafts.newValue;
+    if (!Array.isArray(list) || list.length === 0) return;
+    if (!list[0] || list[0].draftId !== viewedDraftId) {
+      following = false; // a newer draft started — the one we're viewing is now archived
+      return;
+    }
+    const draft = list[0];
+    if (!draft.picks || draft.picks.length === 0) return;
     const wasAtEnd = stepIndex === replay.steps.length - 1;
     replay = buildReplay(draft);
     stepIndex = wasAtEnd ? replay.steps.length - 1 : Math.min(stepIndex, replay.steps.length - 1);
@@ -215,24 +226,32 @@
     loadCardData().then(renderStep);
   }
 
-  function refreshLastDraftButton() {
-    const btn = $("dmw-load-last");
+  function refreshHistory() {
+    const container = $("dmw-history");
     const area = storageLocal();
     if (!area) {
-      btn.disabled = true;
-      btn.textContent = "Load my last draft (unavailable)";
+      container.textContent = "Storage unavailable.";
       return;
     }
-    area.get("dmwLastDraft", (data) => {
-      const d = data && data.dmwLastDraft;
-      if (d && d.picks && d.picks.length) {
-        const when = new Date(d.capturedAt || 0).toLocaleString();
-        btn.disabled = false;
-        btn.textContent = `Load my last draft — ${when} · ${d.picks.length} picks`;
-      } else {
-        btn.disabled = true;
-        btn.textContent = "Load my last draft (none captured yet)";
+    area.get("dmwDrafts", (data) => {
+      const list = Array.isArray(data.dmwDrafts) ? data.dmwDrafts : [];
+      container.innerHTML = "";
+      if (list.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "dmw-empty";
+        empty.textContent = "No captured drafts yet — draft on draftmancer.com first.";
+        container.appendChild(empty);
+        return;
       }
+      list.forEach((draft, i) => {
+        const row = document.createElement("button");
+        row.className = "dmw-history-row";
+        const when = new Date(draft.capturedAt || 0).toLocaleString();
+        const n = (draft.picks && draft.picks.length) || 0;
+        row.textContent = `${i === 0 ? "● current — " : ""}${when} · ${n} picks`;
+        row.addEventListener("click", () => openDraft(draft.draftId));
+        container.appendChild(row);
+      });
     });
   }
 
@@ -252,10 +271,9 @@
       if (file) file.text().then(load).catch((e) => ($("dmw-error").textContent = e.message));
       else load($("dmw-paste").value || "");
     });
-    $("dmw-load-last").addEventListener("click", loadLastDraft);
-    refreshLastDraftButton();
+    refreshHistory();
     const area = (typeof chrome !== "undefined" && chrome.storage && chrome.storage.onChanged) || null;
-    if (area) chrome.storage.onChanged.addListener(onLastDraftChanged);
+    if (area) chrome.storage.onChanged.addListener(onDraftsChanged);
     $("dmw-prev").addEventListener("click", () => go(-1));
     $("dmw-next").addEventListener("click", () => go(1));
     document.addEventListener("keydown", (e) => {

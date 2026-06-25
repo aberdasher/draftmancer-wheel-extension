@@ -13,7 +13,10 @@
       <div>or paste the log below:</div>
       <textarea id="dmw-paste" rows="10" placeholder="Paste your draft log here…"></textarea>
       <button id="dmw-load">Load</button>
-      <button id="dmw-load-last" disabled>Load my last draft</button>
+      <div id="dmw-history-section">
+        <div class="dmw-history-label">Your recent drafts</div>
+        <div id="dmw-history"></div>
+      </div>
       <div id="dmw-error" class="dmw-error"></div>
     </div>
 
@@ -59,6 +62,7 @@
     <script src="src/viewer/replay.js"></script>
     <script src="src/viewer/deck-layout.js"></script>
     <script src="src/viewer/prefs.js"></script>
+    <script src="src/history.js"></script>
     <script src="src/viewer/viewer.js"></script>
   </body>
 </html>
