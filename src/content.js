@@ -8,11 +8,21 @@
   // Draft capture (createDraftCapture is a content-script global from capture.js).
   const capture = createDraftCapture();
   let sawCleanStart = false;
+  let currentDraftId = null;
   function persistDraft() {
     try {
       const area = (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) || null;
       if (!area) return;
-      area.set({ dmwLastDraft: Object.assign({ capturedAt: Date.now() }, capture.getDraft()) });
+      const entry = Object.assign({ draftId: currentDraftId, capturedAt: Date.now() }, capture.getDraft());
+      area.get(["dmwDrafts", "dmwLastDraft"], (data) => {
+        let list = Array.isArray(data.dmwDrafts) ? data.dmwDrafts : [];
+        // one-time migration: seed the list from a legacy single-slot capture
+        if (list.length === 0 && data.dmwLastDraft && data.dmwLastDraft.picks && data.dmwLastDraft.picks.length) {
+          const legacy = data.dmwLastDraft;
+          list = [Object.assign({ draftId: legacy.capturedAt || 0 }, legacy)];
+        }
+        area.set({ dmwDrafts: DraftHistory.upsertCurrent(list, entry, 3) });
+      });
     } catch (_e) {
       /* never break the sidebar */
     }
@@ -88,7 +98,10 @@
       render(tracker.handleDraftState(msg.args[0]));
       try {
         const ds = msg.args[0];
-        if (ds && ds.boosterNumber === 0 && ds.pickNumber === 0) sawCleanStart = true;
+        if (ds && ds.boosterNumber === 0 && ds.pickNumber === 0) {
+          sawCleanStart = true;
+          currentDraftId = Date.now(); // stable id for this draft (start time)
+        }
         capture.onDraftState(ds);
       } catch (_e) { /* ignore */ }
     } else if (msg.event === "rejoinDraft") {
