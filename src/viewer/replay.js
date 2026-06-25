@@ -16,6 +16,7 @@ function ref(card) {
   const r = { name: card.name };
   if (card.set) r.set = card.set;
   if (card.collector) r.collector = card.collector;
+  if (typeof card.uniqueID === "number") r.uniqueID = card.uniqueID;
   return r;
 }
 

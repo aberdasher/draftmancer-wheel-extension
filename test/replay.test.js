@@ -80,3 +80,15 @@ test("a burned card (captured) is excluded from didntWheel", () => {
   // pack1 {A,B,C,D} returns as {C}: D didn't wheel; A is own pick; B is own BURN (excluded).
   assert.deepStrictEqual(steps[2].didntWheel.map((c) => c.name), ["D"]);
 });
+
+test("deckSoFar cards carry uniqueID when present (for maindeck filtering)", () => {
+  const parsed = {
+    player: null,
+    picks: [
+      { packNum: 1, pickNum: 1, cards: [{ name: "A", uniqueID: 7 }, { name: "B", uniqueID: 8 }], pickedIndices: [0] },
+      { packNum: 1, pickNum: 2, cards: [{ name: "C", uniqueID: 9 }], pickedIndices: [0] },
+    ],
+  };
+  const { steps } = buildReplay(parsed);
+  assert.strictEqual(steps[1].deckSoFar[0].uniqueID, 7); // A, picked at step 0
+});
