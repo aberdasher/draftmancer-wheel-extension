@@ -177,3 +177,8 @@ button:disabled {
 .dmw-stat-block { max-width: 320px; }
 .dmw-stat-head { font-weight: bold; opacity: 0.85; }
 .dmw-stat-sub { opacity: 0.8; }
+#dmw-version {
+  font-size: 14px;
+  font-weight: normal;
+  opacity: 0.55;
+}

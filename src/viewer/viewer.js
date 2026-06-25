@@ -306,6 +306,12 @@
   }
 
   function init() {
+    try {
+      const v = typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.getManifest && chrome.runtime.getManifest().version;
+      if (v) $("dmw-version").textContent = "v" + v;
+    } catch (_e) {
+      /* ignore */
+    }
     Prefs.loadPrefs((prefs) => {
       hidePick = prefs.hidePick;
       deckSort = prefs.deckSort;
