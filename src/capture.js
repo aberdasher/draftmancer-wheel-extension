@@ -58,6 +58,9 @@ function createDraftCapture() {
   }
 
   function onSwapDeckAndSideboard() {
+    // Non-idempotent: relies on capturing the OUTBOUND emit once (Draftmancer
+    // does not echo the move back to the originating client), so a single user
+    // swap is applied exactly once.
     const all = pickedIds();
     const complement = all.filter((id) => !sideboard.has(id));
     sideboard.clear();
