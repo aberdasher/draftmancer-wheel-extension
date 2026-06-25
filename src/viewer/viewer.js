@@ -10,6 +10,7 @@
   let splitCreatures = Prefs.DEFAULTS.splitCreatures; // (persisted)
   let following = false; // viewer is tracking the live-captured draft
   let viewedDraftId = null; // draftId of the history entry currently open
+  let currentSideboard = []; // uniqueIDs in the open draft's sideboard
 
   const $ = (id) => document.getElementById(id);
 
@@ -44,9 +45,11 @@
         name: c.name,
         set: c.set,
         collector: c.collector,
+        uniqueID: c.uniqueID,
         cmc: d ? d.cmc : 0,
         colors: d ? d.colors : [],
         typeLine: d ? d.typeLine : "",
+        manaCost: d ? d.manaCost : "",
       };
     });
   }
@@ -65,6 +68,47 @@
       colEl.appendChild(stack);
       container.appendChild(colEl);
     }
+  }
+
+  function renderStats(maindeckEnriched, sideboardCount) {
+    const el = $("dmw-stats");
+    el.innerHTML = "";
+    const s = DeckStats.computeStats(maindeckEnriched);
+
+    const block = (headText, subLines) => {
+      const b = document.createElement("div");
+      b.className = "dmw-stat-block";
+      const h = document.createElement("div");
+      h.className = "dmw-stat-head";
+      h.textContent = headText;
+      b.appendChild(h);
+      for (const line of subLines) {
+        const d = document.createElement("div");
+        d.className = "dmw-stat-sub";
+        d.textContent = line;
+        b.appendChild(d);
+      }
+      return b;
+    };
+
+    el.appendChild(
+      block(`Maindeck: ${s.total}`, [
+        `${s.creatures} creatures · ${s.spells} spells · ${s.lands} lands`,
+        sideboardCount > 0 ? `Sideboard: ${sideboardCount}` : "",
+      ].filter(Boolean))
+    );
+
+    const pipLine = ["W", "U", "B", "R", "G"].filter((c) => s.pips[c] > 0).map((c) => `${c} ${s.pips[c]}`).join(" · ");
+    el.appendChild(block("Color pips", [pipLine || "—"]));
+
+    const srcColors = Object.keys(s.sources);
+    const srcSub = srcColors.length
+      ? srcColors.map((c) => `${c}: ${s.sources[c].max} (${s.sources[c].top.map((t) => `${t.name} ${t.sources}`).join(", ")})`)
+      : ["—"];
+    el.appendChild(block("Sources needed (40-card)", srcSub));
+
+    const typeLine = Object.keys(s.types).filter((t) => s.types[t] > 0).map((t) => `${t} ${s.types[t]}`).join(" · ");
+    el.appendChild(block("Types", [typeLine || "—"]));
   }
 
   function renderDeck(deck) {
@@ -119,8 +163,11 @@
       ws.hidden = true;
     }
 
-    $("dmw-deck-title").textContent = `Your deck so far (${step.deckSoFar.length})`;
-    renderDeck(step.deckSoFar);
+    const sideSet = new Set(currentSideboard);
+    const maindeck = step.deckSoFar.filter((c) => !sideSet.has(c.uniqueID));
+    $("dmw-deck-title").textContent = `Your deck so far (${maindeck.length})`;
+    renderStats(enrichDeck(maindeck), step.deckSoFar.length - maindeck.length);
+    renderDeck(maindeck);
   }
 
   function go(delta) {
@@ -168,6 +215,7 @@
     }
     following = false; // loading an external log exits follow mode
     viewedDraftId = null;
+    currentSideboard = []; // external pasted logs have no sideboard data
     stepIndex = 0;
     revealed = false;
     cardData = new Map();
@@ -194,6 +242,7 @@
         return;
       }
       viewedDraftId = draftId;
+      currentSideboard = Array.isArray(draft.sideboard) ? draft.sideboard : [];
       following = !!(list[0] && list[0].draftId === draftId); // only the current (newest) draft live-follows
       replay = buildReplay(draft);
       stepIndex = replay.steps.length - 1; // jump to the latest pick
@@ -219,6 +268,7 @@
     }
     const draft = list[0];
     if (!draft.picks || draft.picks.length === 0) return;
+    currentSideboard = Array.isArray(draft.sideboard) ? draft.sideboard : [];
     const wasAtEnd = stepIndex === replay.steps.length - 1;
     replay = buildReplay(draft);
     stepIndex = wasAtEnd ? replay.steps.length - 1 : Math.min(stepIndex, replay.steps.length - 1);
