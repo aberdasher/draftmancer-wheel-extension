@@ -66,6 +66,21 @@ function computeManaBase(cards) {
   return { counts, lands: lands.length, fetches };
 }
 
-const ManaSources = { fetchTargets, landColors, computeManaBase };
+// Pair supply (computeManaBase) against demand (DeckStats.computeStats.sources),
+// one row per color present on either side, in WUBRG order.
+function compareToDemand(manaBase, deckStats) {
+  const counts = (manaBase && manaBase.counts) || { W: 0, U: 0, B: 0, R: 0, G: 0 };
+  const sources = (deckStats && deckStats.sources) || {};
+  const rows = [];
+  for (const color of COLORS) {
+    const have = counts[color] || 0;
+    const need = (sources[color] && sources[color].max) || 0;
+    if (have === 0 && need === 0) continue;
+    rows.push({ color, have, need, short: Math.max(0, need - have) });
+  }
+  return rows;
+}
+
+const ManaSources = { fetchTargets, landColors, computeManaBase, compareToDemand };
 if (typeof module !== "undefined" && module.exports) module.exports = ManaSources;
 if (typeof globalThis !== "undefined") globalThis.ManaSources = ManaSources;

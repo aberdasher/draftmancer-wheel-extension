@@ -106,3 +106,31 @@ test("computeManaBase: lists fetches with their reachable colors (pool-aware)", 
   assert.strictEqual(mb.counts.W, 2); // Hallowed Fountain + Arid Mesa
   assert.strictEqual(mb.counts.U, 2); // Hallowed Fountain + Arid Mesa
 });
+
+const { compareToDemand } = require("../src/viewer/mana-sources.js");
+
+test("compareToDemand: rows over the supply∪demand union with shortfalls", () => {
+  const manaBase = { counts: { W: 6, U: 3, B: 0, R: 1, G: 0 }, lands: 9, fetches: [] };
+  const deckStats = { sources: { W: { max: 11 }, U: { max: 6 }, R: { max: 1 } } };
+  assert.deepStrictEqual(compareToDemand(manaBase, deckStats), [
+    { color: "W", have: 6, need: 11, short: 5 },
+    { color: "U", have: 3, need: 6, short: 3 },
+    { color: "R", have: 1, need: 1, short: 0 },
+  ]);
+});
+
+test("compareToDemand: supply with no demand shows need 0, no shortfall; skips empty colors", () => {
+  const manaBase = { counts: { W: 0, U: 0, B: 2, R: 0, G: 0 }, lands: 2, fetches: [] };
+  const deckStats = { sources: {} };
+  assert.deepStrictEqual(compareToDemand(manaBase, deckStats), [
+    { color: "B", have: 2, need: 0, short: 0 },
+  ]);
+});
+
+test("compareToDemand: demand with no supply is fully short", () => {
+  const manaBase = { counts: { W: 0, U: 0, B: 0, R: 0, G: 0 }, lands: 0, fetches: [] };
+  const deckStats = { sources: { U: { max: 6 } } };
+  assert.deepStrictEqual(compareToDemand(manaBase, deckStats), [
+    { color: "U", have: 0, need: 6, short: 6 },
+  ]);
+});
