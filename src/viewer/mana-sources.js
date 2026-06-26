@@ -47,6 +47,25 @@ function landColors(card, poolLands) {
   return colors;
 }
 
-const ManaSources = { fetchTargets, landColors };
+function isLand(card) {
+  return /land/i.test(card.typeLine || "");
+}
+
+// Aggregate the colored mana supply of the lands in a pool.
+function computeManaBase(cards) {
+  const lands = (Array.isArray(cards) ? cards : []).filter(isLand);
+  const counts = { W: 0, U: 0, B: 0, R: 0, G: 0 };
+  const fetches = [];
+  for (const land of lands) {
+    const colors = landColors(land, lands);
+    for (const c of colors) counts[c]++;
+    if (fetchTargets(land.oracleText).types.size > 0) {
+      fetches.push({ name: land.name, colors: COLORS.filter((c) => colors.has(c)) });
+    }
+  }
+  return { counts, lands: lands.length, fetches };
+}
+
+const ManaSources = { fetchTargets, landColors, computeManaBase };
 if (typeof module !== "undefined" && module.exports) module.exports = ManaSources;
 if (typeof globalThis !== "undefined") globalThis.ManaSources = ManaSources;

@@ -80,3 +80,29 @@ test("landColors: colorless-only utility land → empty", () => {
   const wastes = L("Wastes", "Basic Land", ["C"], "{T}: Add {C}.");
   assert.deepStrictEqual(sortedColors(landColors(wastes, [wastes])), []);
 });
+
+const { computeManaBase } = require("../src/viewer/mana-sources.js");
+
+test("computeManaBase: counts sources, counts duplicates, totals lands", () => {
+  const pool = [
+    L("Forest", "Basic Land — Forest", ["G"]),
+    L("Forest", "Basic Land — Forest", ["G"]),
+    HALLOWED,
+    L("Lightning Bolt", "Instant", [], ""), // non-land, ignored
+  ];
+  const mb = computeManaBase(pool);
+  assert.strictEqual(mb.lands, 3);
+  assert.strictEqual(mb.counts.G, 2);
+  assert.strictEqual(mb.counts.W, 1);
+  assert.strictEqual(mb.counts.U, 1);
+  assert.strictEqual(mb.counts.B, 0);
+});
+
+test("computeManaBase: lists fetches with their reachable colors (pool-aware)", () => {
+  const mb = computeManaBase([ARID_MESA, HALLOWED]);
+  assert.deepStrictEqual(mb.fetches, [{ name: "Arid Mesa", colors: ["W", "U", "R"] }]);
+  // Arid Mesa counts toward R, W, and (via Hallowed Fountain) U
+  assert.strictEqual(mb.counts.R, 1);
+  assert.strictEqual(mb.counts.W, 2); // Hallowed Fountain + Arid Mesa
+  assert.strictEqual(mb.counts.U, 2); // Hallowed Fountain + Arid Mesa
+});
