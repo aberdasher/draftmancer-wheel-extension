@@ -1,6 +1,8 @@
 // Pure mana-base (supply) analysis over enriched land cards
 // { name, typeLine, producedMana, oracleText }. No chrome, DOM, fetch, or Date.
-const COLORS = ["W", "U", "B", "R", "G"];
+// Named WUBRG (not COLORS) to avoid redeclaring deck-stats.js's top-level
+// `const COLORS` — on the viewer page these files share one global scope.
+const WUBRG = ["W", "U", "B", "R", "G"];
 const BASIC_TYPES = ["Plains", "Island", "Swamp", "Mountain", "Forest"];
 const TYPE_TO_COLOR = { Plains: "W", Island: "U", Swamp: "B", Mountain: "R", Forest: "G" };
 
@@ -25,7 +27,7 @@ function fetchTargets(oracleText) {
 // Colored (non-C) subset of producedMana as a Set.
 function coloredProduced(card) {
   const out = new Set();
-  for (const m of card.producedMana || []) if (COLORS.includes(m)) out.add(m);
+  for (const m of card.producedMana || []) if (WUBRG.includes(m)) out.add(m);
   return out;
 }
 
@@ -47,20 +49,20 @@ function landColors(card, poolLands) {
   return colors;
 }
 
-function isLand(card) {
+function isLandCard(card) {
   return /land/i.test(card.typeLine || "");
 }
 
 // Aggregate the colored mana supply of the lands in a pool.
 function computeManaBase(cards) {
-  const lands = (Array.isArray(cards) ? cards : []).filter(isLand);
+  const lands = (Array.isArray(cards) ? cards : []).filter(isLandCard);
   const counts = { W: 0, U: 0, B: 0, R: 0, G: 0 };
   const fetches = [];
   for (const land of lands) {
     const colors = landColors(land, lands);
     for (const c of colors) counts[c]++;
     if (fetchTargets(land.oracleText).types.size > 0) {
-      fetches.push({ name: land.name, colors: COLORS.filter((c) => colors.has(c)) });
+      fetches.push({ name: land.name, colors: WUBRG.filter((c) => colors.has(c)) });
     }
   }
   return { counts, lands: lands.length, fetches };
@@ -72,7 +74,7 @@ function compareToDemand(manaBase, deckStats) {
   const counts = (manaBase && manaBase.counts) || { W: 0, U: 0, B: 0, R: 0, G: 0 };
   const sources = (deckStats && deckStats.sources) || {};
   const rows = [];
-  for (const color of COLORS) {
+  for (const color of WUBRG) {
     const have = counts[color] || 0;
     const need = (sources[color] && sources[color].max) || 0;
     if (have === 0 && need === 0) continue;

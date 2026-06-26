@@ -50,6 +50,8 @@
         colors: d ? d.colors : [],
         typeLine: d ? d.typeLine : "",
         manaCost: d ? d.manaCost : "",
+        producedMana: d ? d.producedMana : [],
+        oracleText: d ? d.oracleText : "",
       };
     });
   }
@@ -106,6 +108,14 @@
       ? srcColors.map((c) => `${c}: ${s.sources[c].max} (${s.sources[c].top.map((t) => `${t.name} ${t.sources}`).join(", ")})`)
       : ["—"];
     el.appendChild(block("Sources needed (40-card)", srcSub));
+
+    const mb = ManaSources.computeManaBase(maindeckEnriched);
+    const rows = ManaSources.compareToDemand(mb, s);
+    const manaSub = rows.length
+      ? rows.map((r) => `${r.color}: ${r.have} / ${r.need}` + (r.short > 0 ? `  ⚠ short ${r.short}` : r.need > 0 ? "  ok" : ""))
+      : ["—"];
+    const fetchLines = mb.fetches.map((f) => `${f.name} → ${f.colors.join(" ") || "—"}`);
+    el.appendChild(block(`Mana (lands): ${mb.lands}`, manaSub.concat(fetchLines.length ? ["fetches:"].concat(fetchLines) : [])));
 
     const typeLine = Object.keys(s.types).filter((t) => s.types[t] > 0).map((t) => `${t} ${s.types[t]}`).join(" · ");
     el.appendChild(block("Types", [typeLine || "—"]));
