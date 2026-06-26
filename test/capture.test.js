@@ -128,3 +128,36 @@ test("onRejoinZones seeds the sideboard from pickedCards.side", () => {
   cap.onRejoinZones({ main: [{ uniqueID: 1 }], side: [{ uniqueID: 2 }, { uniqueID: 3 }] });
   assert.deepStrictEqual(cap.getDraft().sideboard.slice().sort(), [2, 3]);
 });
+
+test("getMaindeckCards: picked cards minus sideboard", () => {
+  const cap = createDraftCapture();
+  cap.onDraftState({ boosterNumber: 0, pickNumber: 0, booster: [{ name: "A", uniqueID: 1 }, { name: "B", uniqueID: 2 }] });
+  cap.onPickCard({ pickedCards: [0] }); // A(1)
+  cap.onDraftState({ boosterNumber: 0, pickNumber: 1, booster: [{ name: "C", uniqueID: 3 }] });
+  cap.onPickCard({ pickedCards: [0] }); // C(3)
+  cap.onMoveCard(3, "side"); // C -> sideboard
+  assert.deepStrictEqual(cap.getMaindeckCards(), [{ name: "A", uniqueID: 1 }]);
+});
+
+test("getMaindeckCards: empty sideboard returns all picked", () => {
+  const cap = createDraftCapture();
+  cap.onDraftState({ boosterNumber: 0, pickNumber: 0, booster: [{ name: "A", uniqueID: 1, set: "m21", collector_number: "1" }] });
+  cap.onPickCard({ pickedCards: [0] });
+  assert.deepStrictEqual(cap.getMaindeckCards(), [{ name: "A", set: "m21", collector: "1", uniqueID: 1 }]);
+});
+
+test("getMaindeckCards: after moveAllToSideboard is empty", () => {
+  const cap = createDraftCapture();
+  cap.onDraftState({ boosterNumber: 0, pickNumber: 0, booster: [{ name: "A", uniqueID: 1 }] });
+  cap.onPickCard({ pickedCards: [0] });
+  cap.onMoveAllToSideboard();
+  assert.deepStrictEqual(cap.getMaindeckCards(), []);
+});
+
+test("getMaindeckCards: excludes burned cards, reflects rejoin sideboard", () => {
+  const cap = createDraftCapture();
+  cap.onDraftState({ boosterNumber: 0, pickNumber: 0, booster: [{ name: "A", uniqueID: 1 }, { name: "B", uniqueID: 2 }, { name: "C", uniqueID: 3 }] });
+  cap.onPickCard({ pickedCards: [0], burnedCards: [1] }); // pick A, burn B
+  cap.onRejoinZones({ main: [{ uniqueID: 1 }], side: [] });
+  assert.deepStrictEqual(cap.getMaindeckCards(), [{ name: "A", uniqueID: 1 }]);
+});

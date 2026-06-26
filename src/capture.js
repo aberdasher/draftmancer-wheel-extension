@@ -48,6 +48,19 @@ function createDraftCapture() {
     return ids;
   }
 
+  function getMaindeckCards() {
+    const d = getDraft();
+    const side = new Set(d.sideboard || []);
+    const out = [];
+    for (const p of d.picks) {
+      for (const idx of p.pickedIndices) {
+        const c = p.cards[idx];
+        if (c && typeof c.uniqueID === "number" && !side.has(c.uniqueID)) out.push(c);
+      }
+    }
+    return out;
+  }
+
   function onMoveCard(uniqueID, zone) {
     if (zone === "side") sideboard.add(uniqueID);
     else sideboard.delete(uniqueID);
@@ -79,7 +92,7 @@ function createDraftCapture() {
     return d;
   }
 
-  return { onDraftState, onPickCard, onMoveCard, onMoveAllToSideboard, onSwapDeckAndSideboard, onRejoinZones, getDraft };
+  return { onDraftState, onPickCard, onMoveCard, onMoveAllToSideboard, onSwapDeckAndSideboard, onRejoinZones, getDraft, getMaindeckCards };
 }
 
 if (typeof module !== "undefined" && module.exports) module.exports = { createDraftCapture };
