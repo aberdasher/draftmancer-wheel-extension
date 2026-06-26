@@ -19,7 +19,7 @@ test("chunk splits into batches of the given size", () => {
 test("toCardData reads image_uris, falling back to the first face", () => {
   assert.deepStrictEqual(
     toCardData({ name: "A", cmc: 3, image_uris: { normal: "a.jpg" }, type_line: "Creature", colors: ["G"] }),
-    { name: "A", imageUrl: "a.jpg", cmc: 3, colors: ["G"], typeLine: "Creature", manaCost: "" }
+    { name: "A", imageUrl: "a.jpg", cmc: 3, colors: ["G"], typeLine: "Creature", manaCost: "", producedMana: [], oracleText: "" }
   );
   const dfc = toCardData({
     name: "B // C",
@@ -29,6 +29,36 @@ test("toCardData reads image_uris, falling back to the first face", () => {
   });
   assert.strictEqual(dfc.imageUrl, "b.jpg");
   assert.deepStrictEqual(dfc.colors, ["U"]);
+});
+
+test("toCardData reads produced_mana and oracle_text, falling back to the first face", () => {
+  const land = toCardData({
+    name: "Hallowed Fountain",
+    type_line: "Land — Plains Island",
+    produced_mana: ["W", "U"],
+    oracle_text: "({T}: Add {W} or {U}.)",
+  });
+  assert.deepStrictEqual(land.producedMana, ["W", "U"]);
+  assert.match(land.oracleText, /Add \{W\}/);
+
+  // Real modal-DFC lands carry produced_mana at the TOP level (oracle_text is
+  // per-face), so top-level wins:
+  const mdfc = toCardData({
+    name: "Sea Gate Restoration // Sea Gate, Reborn",
+    type_line: "Sorcery // Land",
+    produced_mana: ["U"],
+    card_faces: [{ oracle_text: "Draw cards." }, { oracle_text: "{T}: Add {U}." }],
+  });
+  assert.deepStrictEqual(mdfc.producedMana, ["U"]);
+
+  // When the top level lacks these, fall back to the first face:
+  const faceFallback = toCardData({
+    name: "Facey",
+    type_line: "Land",
+    card_faces: [{ produced_mana: ["G"], oracle_text: "{T}: Add {G}." }],
+  });
+  assert.deepStrictEqual(faceFallback.producedMana, ["G"]);
+  assert.strictEqual(faceFallback.oracleText, "{T}: Add {G}.");
 });
 
 test("toCardData defaults a missing cmc to 0 and missing image to empty string", () => {

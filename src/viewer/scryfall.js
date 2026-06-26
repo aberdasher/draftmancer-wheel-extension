@@ -39,6 +39,8 @@ function toCardData(card) {
     colors: card.colors || (face && face.colors) || [],
     typeLine: card.type_line || "",
     manaCost: card.mana_cost || (face && face.mana_cost) || "",
+    producedMana: card.produced_mana || (face && face.produced_mana) || [],
+    oracleText: card.oracle_text || (face && face.oracle_text) || "",
   };
 }
 
