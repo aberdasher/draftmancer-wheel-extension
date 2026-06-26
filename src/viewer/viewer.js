@@ -109,18 +109,8 @@
       : ["—"];
     el.appendChild(block("Sources needed (40-card)", srcSub));
 
-    const mb = ManaSources.computeManaBase(maindeckEnriched);
-    const rows = ManaSources.compareToDemand(mb, s);
-    const manaRow = (r) => {
-      let status = "";
-      if (r.short > 0) status = `  ⚠ short ${r.short}`;
-      else if (r.need > 0) status = "  ok";
-      return `${r.color}: ${r.have} / ${r.need}${status}`;
-    };
-    const manaSub = rows.length ? rows.map(manaRow) : ["—"];
-    const fetchLines = mb.fetches.map((f) => `${f.name} → ${f.colors.join(" ") || "—"}`);
-    const manaLines = fetchLines.length ? manaSub.concat("fetches:", fetchLines) : manaSub;
-    el.appendChild(block(`Mana (lands): ${mb.lands}`, manaLines));
+    const report = ManaReport.manaReportLines(maindeckEnriched, s);
+    el.appendChild(block(`Mana (lands): ${report.lands}`, report.lines));
 
     const typeLine = Object.keys(s.types).filter((t) => s.types[t] > 0).map((t) => `${t} ${s.types[t]}`).join(" · ");
     el.appendChild(block("Types", [typeLine || "—"]));
