@@ -36,7 +36,7 @@ test("fetchTargets: non-fetch text → empty", () => {
 
 const { landColors } = require("../src/viewer/mana-sources.js");
 
-const sortedColors = (set) => [...set].sort();
+const sortedColors = (result) => [...result.colors].sort();
 const L = (name, typeLine, producedMana, oracleText) => ({ name, typeLine, producedMana: producedMana || [], oracleText: oracleText || "" });
 
 const FOREST = L("Forest", "Basic Land — Forest", ["G"]);

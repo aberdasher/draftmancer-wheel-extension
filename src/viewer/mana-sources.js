@@ -6,6 +6,16 @@ const WUBRG = ["W", "U", "B", "R", "G"];
 const BASIC_TYPES = ["Plains", "Island", "Swamp", "Mountain", "Forest"];
 const TYPE_TO_COLOR = { Plains: "W", Island: "U", Swamp: "B", Mountain: "R", Forest: "G" };
 
+// Whole-word match. Case-sensitive: basic type names like "Forest" are capitalized.
+function hasWord(text, word) {
+  return new RegExp("\\b" + word + "\\b").test(text);
+}
+
+// A fresh, zeroed WUBRG tally.
+function emptyCounts() {
+  return { W: 0, U: 0, B: 0, R: 0, G: 0 };
+}
+
 // Parse a fetch/search land's oracle text into the basic land TYPES it can
 // retrieve and whether it is restricted to basics. Non-fetch text → empty.
 function fetchTargets(oracleText) {
@@ -18,7 +28,7 @@ function fetchTargets(oracleText) {
     return { types, basicsOnly: true };
   }
   for (const t of BASIC_TYPES) {
-    if (new RegExp("\\b" + t + "\\b").test(text)) types.add(t);
+    if (hasWord(text, t)) types.add(t);
   }
   const basicsOnly = types.size > 0 && /\bbasic\b/i.test(text);
   return { types, basicsOnly };
@@ -32,21 +42,25 @@ function coloredProduced(card) {
 }
 
 // The WUBRG colors a single land gives access to, pool-aware for fetches.
+// Returns { colors: Set, isFetch } — exposing isFetch lets callers skip
+// re-parsing the oracle text, since fetch status falls out of the same
+// fetchTargets() call this already makes.
 function landColors(card, poolLands) {
   const colors = coloredProduced(card);
   const { types, basicsOnly } = fetchTargets(card.oracleText);
-  if (types.size > 0) {
+  const isFetch = types.size > 0;
+  if (isFetch) {
     for (const t of types) colors.add(TYPE_TO_COLOR[t]); // basics always available
     if (!basicsOnly && Array.isArray(poolLands)) {
       for (const other of poolLands) {
         if (other === card) continue;
         const tl = other.typeLine || "";
-        const matches = [...types].some((t) => new RegExp("\\b" + t + "\\b").test(tl));
+        const matches = [...types].some((t) => hasWord(tl, t));
         if (matches) for (const c of coloredProduced(other)) colors.add(c);
       }
     }
   }
-  return colors;
+  return { colors, isFetch };
 }
 
 function isLandCard(card) {
@@ -56,12 +70,12 @@ function isLandCard(card) {
 // Aggregate the colored mana supply of the lands in a pool.
 function computeManaBase(cards) {
   const lands = (Array.isArray(cards) ? cards : []).filter(isLandCard);
-  const counts = { W: 0, U: 0, B: 0, R: 0, G: 0 };
+  const counts = emptyCounts();
   const fetches = [];
   for (const land of lands) {
-    const colors = landColors(land, lands);
+    const { colors, isFetch } = landColors(land, lands);
     for (const c of colors) counts[c]++;
-    if (fetchTargets(land.oracleText).types.size > 0) {
+    if (isFetch) {
       fetches.push({ name: land.name, colors: WUBRG.filter((c) => colors.has(c)) });
     }
   }
@@ -71,7 +85,7 @@ function computeManaBase(cards) {
 // Pair supply (computeManaBase) against demand (DeckStats.computeStats.sources),
 // one row per color present on either side, in WUBRG order.
 function compareToDemand(manaBase, deckStats) {
-  const counts = (manaBase && manaBase.counts) || { W: 0, U: 0, B: 0, R: 0, G: 0 };
+  const counts = (manaBase && manaBase.counts) || emptyCounts();
   const sources = (deckStats && deckStats.sources) || {};
   const rows = [];
   for (const color of WUBRG) {
