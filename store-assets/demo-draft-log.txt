@@ -1,0 +1,463 @@
+Event #: DMW-DEMO-0001
+Time: Thu, 26 Jun 2026 00:00:00 GMT
+Players:
+--> aberdasher
+    Bot 1
+    Bot 2
+    Bot 3
+    Bot 4
+    Bot 5
+    Bot 6
+    Bot 7
+
+------ DMU ------
+
+Pack 1 pick 1:
+--> Artillery Blast
+    Contaminated Aquifer
+    Molten Monstrosity
+    Vanquisher's Axe
+    Elvish Hydromancer
+    Gaea's Might
+    Dragon Whelp
+    Bortuk Bonerattle
+    Elfhame Wurm
+    Benalish Faithbonder
+    Tidepool Turtle
+    Tura Kennerüd, Skyknight
+    Shield-Wall Sentinel
+    Founding the Third Path
+    Mountain
+
+Pack 1 pick 2:
+--> Tear Asunder
+    Zar Ojanen, Scion of Efrava
+    Blight Pile
+    Resolute Reinforcements
+    Battlewing Mystic
+    Aron, Benalia's Ruin
+    A-Scout the Wilderness
+    Mesa Cavalier
+    Writhing Necromass
+    Queen Allenal of Ruadach
+    Tori D'Avenant, Fury Rider
+    Argivian Phalanx
+    Raff, Weatherlight Stalwart
+    Meteorite
+
+Pack 1 pick 3:
+--> A-Sunbathing Rootwalla
+    A-Radha, Coalition Warlord
+    Sheoldred's Restoration
+    Swamp
+    Sprouting Goblin
+    Bone Splinters
+    Take Up the Shield
+    Pilfer
+    Keldon Strike Team
+    Monstrous War-Leech
+    Knight of Dusk's Shadow
+    Relic of Legends
+    Negate
+
+Pack 1 pick 4:
+--> Extinguish the Light
+    Broken Wings
+    Sunbathing Rootwalla
+    Snarespinner
+    Coalition Skyknight
+    Garna, Bloodfist of Keld
+    Molten Tributary
+    Toxic Abomination
+    Vineshaper Prodigy
+    Thrill of Possibility
+    Micromancer
+    Argivian Cavalier
+
+Pack 1 pick 5:
+--> Lightning Strike
+    Phyrexian Espionage
+    Yavimaya Steelcrusher
+    Captain's Call
+    Phyrexian Warhorse
+    A-Rulik Mons, Warren Chief
+    Clockwork Drawbridge
+    Impulse
+    Sengir Connoisseur
+    Strength of the Coalition
+    Lagomos, Hand of Hatred
+
+Pack 1 pick 6:
+--> Phyrexian Rager
+    Linebreaker Baloth
+    Radiant Grove
+    The Weatherseed Treaty
+    Benalish Sleeper
+    Twinferno
+    Combat Research
+    Yavimaya Iconoclast
+    Meria's Outrider
+    Bite Down
+
+Pack 1 pick 7:
+--> Academy Wall
+    Nael, Avizoa Aeronaut
+    Warhost's Frenzy
+    Najal, the Storm Runner
+    Uurg, Spawn of Turg
+    Splatter Goblin
+    Hurloon Battle Hymn
+    Fires of Victory
+    Heroic Charge
+
+Pack 1 pick 8:
+--> Soaring Drake
+    Yavimaya Sojourner
+    Llanowar Stalker
+    Viashino Branchrider
+    A-Nael, Avizoa Aeronaut
+    Haunted Mire
+    Scout the Wilderness
+    In Thrall to the Pit
+
+Pack 1 pick 9:
+--> Contaminated Aquifer
+    Molten Monstrosity
+    Vanquisher's Axe
+    Bortuk Bonerattle
+    Benalish Faithbonder
+    Tura Kennerüd, Skyknight
+    Mountain
+
+Pack 1 pick 10:
+--> Zar Ojanen, Scion of Efrava
+    Blight Pile
+    Aron, Benalia's Ruin
+    A-Scout the Wilderness
+    Argivian Phalanx
+    Meteorite
+
+Pack 1 pick 11:
+--> A-Radha, Coalition Warlord
+    Pilfer
+    Monstrous War-Leech
+    Knight of Dusk's Shadow
+    Relic of Legends
+
+Pack 1 pick 12:
+--> Broken Wings
+    Toxic Abomination
+    Thrill of Possibility
+    Micromancer
+
+Pack 1 pick 13:
+--> Captain's Call
+    A-Rulik Mons, Warren Chief
+    Sengir Connoisseur
+
+Pack 1 pick 14:
+--> Linebreaker Baloth
+    Yavimaya Iconoclast
+
+Pack 1 pick 15:
+--> Fires of Victory
+
+Pack 2 pick 1:
+--> Molten Tributary
+    Zar Ojanen, Scion of Efrava
+    Phyrexian Rager
+    Tear Asunder
+    Gibbering Barricade
+    Eerie Soultender
+    Artillery Blast
+    Aggressive Sabotage
+    Scout the Wilderness
+    Vineshaper Prodigy
+    Rona, Sheoldred's Faithful
+    Forest
+    In Thrall to the Pit
+    Ertai's Scorn
+    Phyrexian Missionary
+
+Pack 2 pick 2:
+--> Battle-Rage Blessing
+    Meria's Outrider
+    Juniper Order Rootweaver
+    Molten Monstrosity
+    Viashino Branchrider
+    Contaminated Aquifer
+    Strength of the Coalition
+    Warhost's Frenzy
+    Charismatic Vanguard
+    Shadow Prophecy
+    Love Song of Night and Day
+    Braids's Frightful Return
+    Tidepool Turtle
+    Balmor, Battlemage Captain
+
+Pack 2 pick 3:
+--> A-Sunbathing Rootwalla
+    Elvish Hydromancer
+    Sengir Connoisseur
+    Nael, Avizoa Aeronaut
+    A-Rulik Mons, Warren Chief
+    Tribute to Urborg
+    Bite Down
+    Idyllic Beachfront
+    Stall for Time
+    Tura Kennerüd, Skyknight
+    Raff, Weatherlight Stalwart
+    Shield-Wall Sentinel
+    Knight of Dawn's Light
+
+Pack 2 pick 4:
+--> Tatyova, Steward of Tides
+    Magnigoth Sentry
+    Smash to Dust
+    Resolute Reinforcements
+    Shalai's Acolyte
+    Coral Colony
+    Writhing Necromass
+    Haunted Mire
+    Swamp
+    Prayer of Binding
+    Choking Miasma
+    Relic of Legends
+
+Pack 2 pick 5:
+--> A-Radha, Coalition Warlord
+    Wooded Ridgeline
+    Impede Momentum
+    Jaya's Firenado
+    Rona's Vortex
+    Balduvian Berserker
+    Academy Wall
+    Snarespinner
+    A-Nael, Avizoa Aeronaut
+    Essence Scatter
+    Mesa Cavalier
+
+Pack 2 pick 6:
+--> Pixie Illusionist
+    Automatic Librarian
+    Joint Exploration
+    Radha, Coalition Warlord
+    Keldon Strike Team
+    Slimefoot's Survey
+    Goblin Picker
+    Hero's Heirloom
+    Benalish Sleeper
+    A-Uurg, Spawn of Turg
+
+Pack 2 pick 7:
+--> Mountain
+    Sunlit Marsh
+    Aron, Benalia's Ruin
+    Argivian Cavalier
+    Twinferno
+    Tolarian Geyser
+    Coalition Warbrute
+    Negate
+    Furious Bellow
+
+Pack 2 pick 8:
+--> Samite Herbalist
+    Protect the Negotiators
+    Citizen's Arrest
+    Timely Interference
+    Gaea's Might
+    Cleaving Skyrider
+    Mossbeard Ancient
+    Destroy Evil
+
+Pack 2 pick 9:
+--> Phyrexian Rager
+    Tear Asunder
+    Aggressive Sabotage
+    Scout the Wilderness
+    Rona, Sheoldred's Faithful
+    Forest
+    In Thrall to the Pit
+
+Pack 2 pick 10:
+--> Meria's Outrider
+    Contaminated Aquifer
+    Warhost's Frenzy
+    Braids's Frightful Return
+    Tidepool Turtle
+    Balmor, Battlemage Captain
+
+Pack 2 pick 11:
+--> Sengir Connoisseur
+    Nael, Avizoa Aeronaut
+    Tribute to Urborg
+    Tura Kennerüd, Skyknight
+    Shield-Wall Sentinel
+
+Pack 2 pick 12:
+--> Magnigoth Sentry
+    Resolute Reinforcements
+    Shalai's Acolyte
+    Coral Colony
+
+Pack 2 pick 13:
+--> Jaya's Firenado
+    Snarespinner
+    A-Nael, Avizoa Aeronaut
+
+Pack 2 pick 14:
+--> Keldon Strike Team
+    Benalish Sleeper
+
+Pack 2 pick 15:
+--> Negate
+
+Pack 3 pick 1:
+--> Tribute to Urborg
+    Twinferno
+    A-Nael, Avizoa Aeronaut
+    Samite Herbalist
+    Impulse
+    Tidepool Turtle
+    Charismatic Vanguard
+    Impede Momentum
+    Elas il-Kor, Sadistic Pilgrim
+    Rona's Vortex
+    Tail Swipe
+    Micromancer
+    Frostfist Strider
+    Baird, Argivian Recruiter
+    Griffin Protector
+
+Pack 3 pick 2:
+--> Ertai's Scorn
+    Ghitu Amplifier
+    Sacred Peaks
+    Mountain
+    Phyrexian Rager
+    Colossal Growth
+    Bog Badger
+    Essence Scatter
+    Prayer of Binding
+    Battle-Rage Blessing
+    Sunlit Marsh
+    Raff, Weatherlight Stalwart
+    Forest
+    Broken Wings
+
+Pack 3 pick 3:
+--> Elfhame Wurm
+    Pilfer
+    Founding the Third Path
+    Floriferous Vinewall
+    Lightning Strike
+    Electrostatic Infantry
+    Stall for Time
+    Clockwork Drawbridge
+    Walking Bulwark
+    A-Zar Ojanen, Scion of Efrava
+    Talas Lookout
+    Strength of the Coalition
+    Sheoldred's Restoration
+
+Pack 3 pick 4:
+--> Salvaged Manaworker
+    Balmor, Battlemage Captain
+    Geothermal Bog
+    Djinn of the Fountain
+    Fires of Victory
+    Phyrexian Vivisector
+    Shadow Prophecy
+    Resolute Reinforcements
+    A-Sunbathing Rootwalla
+    Cleaving Skyrider
+    Soaring Drake
+    Argivian Cavalier
+
+Pack 3 pick 5:
+--> The Weatherseed Treaty
+    Molten Tributary
+    Hexbane Tortoise
+    Joint Exploration
+    In Thrall to the Pit
+    Monstrous War-Leech
+    Citizen's Arrest
+    Academy Wall
+    Hammerhand
+    Tangled Islet
+    A-Sprouting Goblin
+
+Pack 3 pick 6:
+--> Meteorite
+    Wooded Ridgeline
+    Molten Monstrosity
+    Goblin Picker
+    Benalish Faithbonder
+    Scout the Wilderness
+    Barkweave Crusher
+    Aggressive Sabotage
+    Blight Pile
+    Crystal Grotto
+
+Pack 3 pick 7:
+--> Hurler Cyclops
+    Shore Up
+    Tori D'Avenant, Fury Rider
+    Yavimaya Steelcrusher
+    Voda Sea Scavenger
+    Braids's Frightful Return
+    Swamp
+    Linebreaker Baloth
+    Uurg, Spawn of Turg
+
+Pack 3 pick 8:
+--> Sprouting Goblin
+    Relic of Legends
+    Radiant Grove
+    Phyrexian Espionage
+    Wingmantle Chaplain
+    Slimefoot's Survey
+    Shield-Wall Sentinel
+    Splatter Goblin
+
+Pack 3 pick 9:
+--> A-Nael, Avizoa Aeronaut
+    Impulse
+    Tidepool Turtle
+    Charismatic Vanguard
+    Tail Swipe
+    Micromancer
+    Baird, Argivian Recruiter
+
+Pack 3 pick 10:
+--> Mountain
+    Bog Badger
+    Essence Scatter
+    Prayer of Binding
+    Battle-Rage Blessing
+    Sunlit Marsh
+
+Pack 3 pick 11:
+--> Pilfer
+    Lightning Strike
+    Walking Bulwark
+    A-Zar Ojanen, Scion of Efrava
+    Talas Lookout
+
+Pack 3 pick 12:
+--> Djinn of the Fountain
+    Phyrexian Vivisector
+    Shadow Prophecy
+    Cleaving Skyrider
+
+Pack 3 pick 13:
+--> Hexbane Tortoise
+    Joint Exploration
+    A-Sprouting Goblin
+
+Pack 3 pick 14:
+--> Molten Monstrosity
+    Blight Pile
+
+Pack 3 pick 15:
+--> Tori D'Avenant, Fury Rider

@@ -4,3 +4,6 @@ node_modules/
 
 # build artifact
 *.zip
+
+# internal planning/design notes
+docs/superpowers/
