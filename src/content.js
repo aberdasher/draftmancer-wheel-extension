@@ -36,6 +36,90 @@
   let root = null;
   let body = null;
   let header = null;
+  let manaPanel = null;
+  let manaBtnEl = null;
+
+  const enrichCache = new Map(); // nameLower -> Scryfall card data, for the page session
+
+  function enrichMaindeck(stubs, dataMap) {
+    return stubs.map((c) => {
+      const d = dataMap.get(c.name.toLowerCase());
+      return {
+        name: c.name,
+        set: c.set,
+        collector: c.collector,
+        uniqueID: c.uniqueID,
+        cmc: d ? d.cmc : 0,
+        colors: d ? d.colors : [],
+        typeLine: d ? d.typeLine : "",
+        manaCost: d ? d.manaCost : "",
+        producedMana: d ? d.producedMana : [],
+        oracleText: d ? d.oracleText : "",
+      };
+    });
+  }
+
+  function setManaButton(text, disabled) {
+    if (!manaBtnEl) return;
+    manaBtnEl.textContent = text;
+    manaBtnEl.disabled = !!disabled;
+  }
+
+  function renderManaMessage(text) {
+    if (!manaPanel) return;
+    manaPanel.innerHTML = "";
+    const m = document.createElement("div");
+    m.className = "dmw-empty";
+    m.textContent = text;
+    manaPanel.appendChild(m);
+  }
+
+  function renderManaReport(report) {
+    if (!manaPanel) return;
+    manaPanel.innerHTML = "";
+    const head = document.createElement("div");
+    head.className = "dmw-mana-head";
+    head.textContent = `Mana base (lands: ${report.lands})`;
+    manaPanel.appendChild(head);
+    for (const line of report.lines) {
+      const d = document.createElement("div");
+      d.className = "dmw-mana-row";
+      d.textContent = line;
+      manaPanel.appendChild(d);
+    }
+  }
+
+  async function calcManaBase() {
+    try {
+      ensureSidebar();
+      const maindeck = capture.getMaindeckCards();
+      if (!maindeck.length) {
+        renderManaMessage("No deck yet — pick and trim some cards first.");
+        setManaButton("Calculate mana base", false);
+        return;
+      }
+      const need = maindeck.filter((c) => !enrichCache.has(c.name.toLowerCase()));
+      if (need.length) {
+        setManaButton(`Fetching ${need.length} card${need.length === 1 ? "" : "s"}…`, true);
+        const map = await Scryfall.fetchCardData(need);
+        for (const [k, v] of map) enrichCache.set(k, v);
+      }
+      setManaButton("Calculating…", true);
+      const dataMap = new Map();
+      for (const c of maindeck) {
+        const k = c.name.toLowerCase();
+        if (enrichCache.has(k)) dataMap.set(k, enrichCache.get(k));
+      }
+      const enriched = enrichMaindeck(maindeck, dataMap);
+      const stats = DeckStats.computeStats(enriched);
+      const report = ManaReport.manaReportLines(enriched, stats);
+      renderManaReport(report);
+      setManaButton("↻ Recalculate", false);
+    } catch (_e) {
+      renderManaMessage("Couldn't reach Scryfall — try again.");
+      setManaButton("Calculate mana base", false);
+    }
+  }
 
   function ensureSidebar() {
     if (root) return;
@@ -55,10 +139,22 @@
         /* never break the sidebar */
       }
     });
+    const manaBtn = document.createElement("button");
+    manaBtn.id = "dmw-mana-btn";
+    manaBtn.textContent = "Calculate mana base";
+    manaBtnEl = manaBtn;
+    manaBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      calcManaBase();
+    });
+    manaPanel = document.createElement("div");
+    manaPanel.className = "dmw-mana-panel";
     body = document.createElement("div");
     body.className = "dmw-body";
     root.appendChild(header);
     root.appendChild(openBtn);
+    root.appendChild(manaBtn);
+    root.appendChild(manaPanel);
     root.appendChild(body);
     document.body.appendChild(root);
   }

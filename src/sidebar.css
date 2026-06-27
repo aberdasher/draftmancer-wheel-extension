@@ -44,3 +44,21 @@
 #dmw-sidebar.dmw-collapsed #dmw-open-replay {
   display: none;
 }
+#dmw-mana-btn {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  background: #36c;
+  color: #fff;
+  border: 0;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+#dmw-mana-btn:disabled { opacity: 0.6; cursor: default; }
+.dmw-mana-panel { padding: 6px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+.dmw-mana-panel:empty { display: none; }
+.dmw-mana-head { font-weight: bold; margin-bottom: 3px; }
+.dmw-mana-row { font-variant-numeric: tabular-nums; line-height: 1.35; white-space: pre; }
+#dmw-sidebar.dmw-collapsed #dmw-mana-btn,
+#dmw-sidebar.dmw-collapsed .dmw-mana-panel { display: none; }
