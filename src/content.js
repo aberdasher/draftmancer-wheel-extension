@@ -101,8 +101,14 @@
       const need = maindeck.filter((c) => !enrichCache.has(c.name.toLowerCase()));
       if (need.length) {
         setManaButton(`Fetching ${need.length} card${need.length === 1 ? "" : "s"}…`, true);
-        const map = await Scryfall.fetchCardData(need);
-        for (const [k, v] of map) enrichCache.set(k, v);
+        try {
+          const map = await Scryfall.fetchCardData(need);
+          for (const [k, v] of map) enrichCache.set(k, v);
+        } catch (_e) {
+          renderManaMessage("Couldn't reach Scryfall — try again.");
+          setManaButton("Calculate mana base", false);
+          return;
+        }
       }
       setManaButton("Calculating…", true);
       const dataMap = new Map();
@@ -116,7 +122,7 @@
       renderManaReport(report);
       setManaButton("↻ Recalculate", false);
     } catch (_e) {
-      renderManaMessage("Couldn't reach Scryfall — try again.");
+      renderManaMessage("Couldn't calculate — try again.");
       setManaButton("Calculate mana base", false);
     }
   }

@@ -161,3 +161,15 @@ test("getMaindeckCards: excludes burned cards, reflects rejoin sideboard", () =>
   cap.onRejoinZones({ main: [{ uniqueID: 1 }], side: [] });
   assert.deepStrictEqual(cap.getMaindeckCards(), [{ name: "A", uniqueID: 1 }]);
 });
+
+test("getMaindeckCards: excludes picked cards whose uniqueID is missing or non-numeric", () => {
+  const cap = createDraftCapture();
+  // booster has one card with a valid numeric uniqueID and one with a string uniqueID
+  cap.onDraftState({
+    boosterNumber: 0, pickNumber: 0,
+    booster: [{ name: "Shock", uniqueID: 11 }, { name: "Opt", uniqueID: "bad-id" }],
+  });
+  cap.onPickCard({ pickedCards: [0, 1] }); // pick both
+  // only the numeric-uniqueID card should appear in the maindeck
+  assert.deepStrictEqual(cap.getMaindeckCards(), [{ name: "Shock", uniqueID: 11 }]);
+});

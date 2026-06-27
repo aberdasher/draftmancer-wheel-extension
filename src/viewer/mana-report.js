@@ -2,11 +2,11 @@
 // the display lines for the "mana base" block. Shared by the replay viewer and
 // the live sidebar so both render identically. Depends on ManaSources (loaded
 // before this file in the browser; require()'d in node).
-const MS = typeof require === "function" ? require("./mana-sources.js") : globalThis.ManaSources;
+const ManaSourcesRef = typeof require === "function" ? require("./mana-sources.js") : globalThis.ManaSources;
 
 function manaReportLines(maindeckEnriched, deckStats) {
-  const mb = MS.computeManaBase(maindeckEnriched);
-  const rows = MS.compareToDemand(mb, deckStats);
+  const mb = ManaSourcesRef.computeManaBase(maindeckEnriched);
+  const rows = ManaSourcesRef.compareToDemand(mb, deckStats);
   const rowLine = (r) => {
     let status = "";
     if (r.short > 0) status = `  ⚠ short ${r.short}`;
