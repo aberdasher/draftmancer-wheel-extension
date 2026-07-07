@@ -1,6 +1,15 @@
 // Fetches card data + image URLs from Scryfall for the cards in a draft log.
 // The log has only names (optionally set+collector), so we resolve them via the
 // /cards/collection batch endpoint (<=75 identifiers per request).
+// Scryfall's /cards/collection matches split, adventure, and double-faced cards
+// only by their FRONT-face name; the combined "A // B" name returns not_found.
+// The returned card's canonical name is still "A // B", so keying results by the
+// full name is unaffected — we just have to ask by the front face.
+function frontFaceName(name) {
+  const i = name.indexOf("//");
+  return i === -1 ? name : name.slice(0, i).trim();
+}
+
 function buildIdentifiers(cards) {
   const byName = new Map();
   for (const c of cards) {
@@ -8,7 +17,7 @@ function buildIdentifiers(cards) {
     const existing = byName.get(key);
     if (!existing) {
       if (c.set && c.collector) byName.set(key, { set: c.set.toLowerCase(), collector_number: String(c.collector) });
-      else byName.set(key, { name: c.name });
+      else byName.set(key, { name: frontFaceName(c.name) });
     } else if (existing.name && c.set && c.collector) {
       byName.set(key, { set: c.set.toLowerCase(), collector_number: String(c.collector) });
     }

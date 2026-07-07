@@ -12,6 +12,23 @@ test("buildIdentifiers dedupes by name and prefers set+collector", () => {
   assert.deepStrictEqual(ids, [{ name: "Shock" }, { set: "iko", collector_number: "55" }]);
 });
 
+test("buildIdentifiers queries split/DFC cards by front-face name", () => {
+  // Scryfall's /cards/collection matches split, adventure, and double-faced
+  // cards only by their FRONT-face name; the full "A // B" name returns
+  // not_found. So a name-only identifier must use the part before "//".
+  const ids = buildIdentifiers([
+    { name: "Life // Death" },
+    { name: "Jennifer Walters // The Sensational She-Hulk" },
+  ]);
+  assert.deepStrictEqual(ids, [{ name: "Life" }, { name: "Jennifer Walters" }]);
+});
+
+test("buildIdentifiers keeps set+collector for split cards (name irrelevant)", () => {
+  // When set+collector is present we match on that, so the "//" name is moot.
+  const ids = buildIdentifiers([{ name: "Life // Death", set: "APC", collector: "126" }]);
+  assert.deepStrictEqual(ids, [{ set: "apc", collector_number: "126" }]);
+});
+
 test("chunk splits into batches of the given size", () => {
   assert.deepStrictEqual(chunk([1, 2, 3, 4, 5], 2), [[1, 2], [3, 4], [5]]);
 });
