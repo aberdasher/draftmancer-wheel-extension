@@ -75,9 +75,24 @@ button:disabled {
   outline: 3px solid #2a6;
   outline-offset: 1px;
 }
+/* No-image fallback (Scryfall miss). Occupy the SAME card-shaped box as a real
+   card image (Scryfall "normal" art is 488×680 ≈ 1.393× as tall as wide) so the
+   overlap math in .dmw-stack stays uniform and the column can never drift when a
+   card's data is missing. Name sits at the top so it shows in the stacked strip. */
 .dmw-cardname {
+  width: 100%;
+  aspect-ratio: 488 / 680;
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
   font-size: 12px;
-  padding: 2px;
+  padding: 6px 4px;
+  border-radius: 5px;
+  background: #23262d;
+  border: 1px solid #3a3f47;
 }
 #dmw-wheel-section h2 {
   color: #f9a;
