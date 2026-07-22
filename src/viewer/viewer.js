@@ -11,6 +11,7 @@
   let following = false; // viewer is tracking the live-captured draft
   let viewedDraftId = null; // draftId of the history entry currently open
   let currentSideboard = []; // uniqueIDs in the open draft's sideboard
+  let tableReads = {}; // seatName -> Set of guessed WUBRG color letters ("Read the Table")
 
   const $ = (id) => document.getElementById(id);
 
@@ -143,8 +144,180 @@
     }
   }
 
+  // --- "Read the Table" panel ---------------------------------------------
+  // Other seats' cards never go through Scryfall (only the viewer's own log
+  // is fetched), so DMW_TABLE picks/keyCards carry their own img/cmc/type —
+  // build elements straight from those embedded fields instead of dataFor/cardEl.
+  function tableCardEl(card) {
+    const div = document.createElement("div");
+    div.className = "dmw-card";
+    if (card.img) {
+      const img = document.createElement("img");
+      img.src = card.img;
+      img.alt = card.name;
+      img.loading = "lazy";
+      div.appendChild(img);
+    } else {
+      const span = document.createElement("span");
+      span.className = "dmw-cardname";
+      span.textContent = card.name || "";
+      div.appendChild(span);
+    }
+    return div;
+  }
+
+  function guessSetFor(name) {
+    if (!tableReads[name]) tableReads[name] = new Set();
+    return tableReads[name];
+  }
+
+  function renderTableGuessBody() {
+    const body = $("dmw-table-body");
+    body.innerHTML = "";
+    const seats = (window.DMW_TABLE && window.DMW_TABLE.seats) || [];
+    seats.forEach((seat) => {
+      const row = document.createElement("div");
+      row.className = "dmw-seat-row";
+      const name = document.createElement("span");
+      name.className = "dmw-seat-name";
+      name.textContent = seat.name;
+      row.appendChild(name);
+      const toggles = document.createElement("span");
+      toggles.className = "dmw-color-toggles";
+      const set = guessSetFor(seat.name);
+      TableRead.COLORS.forEach((col) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "dmw-color-btn dmw-color-" + col;
+        btn.textContent = col;
+        btn.classList.toggle("dmw-active", set.has(col));
+        btn.addEventListener("click", () => {
+          if (set.has(col)) set.delete(col);
+          else set.add(col);
+          btn.classList.toggle("dmw-active", set.has(col));
+        });
+        toggles.appendChild(btn);
+      });
+      row.appendChild(toggles);
+      body.appendChild(row);
+    });
+  }
+
+  // Nonzero WUBRG counts, formatted "7G · 3R · 1U" (count desc, WUBRG tiebreak).
+  function formatColorCounts(counts) {
+    return TableRead.COLORS.map((c) => ({ c, n: counts[c] || 0 }))
+      .filter((x) => x.n > 0)
+      .sort((a, b) => b.n - a.n || TableRead.COLORS.indexOf(a.c) - TableRead.COLORS.indexOf(b.c))
+      .map((x) => `${x.n}${x.c}`)
+      .join(" · ");
+  }
+
+  function renderTablePool(seatName, pool) {
+    const el = $("dmw-table-pool");
+    el.innerHTML = "";
+    el.hidden = false;
+    const head = document.createElement("div");
+    head.className = "dmw-col-head";
+    head.textContent = `${seatName}'s pool (${pool.length})`;
+    el.appendChild(head);
+    const cols = document.createElement("div");
+    cols.className = "dmw-cols";
+    // columnize only reads name/cmc/colors/typeLine to group+sort; carry `img`
+    // through unused by it so tableCardEl can still render the embedded art.
+    const enriched = pool.map((c) => ({ name: c.name, cmc: c.cmc, colors: c.colors || [], typeLine: c.type || "", img: c.img }));
+    DeckLayout.columnize(enriched, "cmc").forEach((col) => {
+      const colEl = document.createElement("div");
+      colEl.className = "dmw-col";
+      const h = document.createElement("div");
+      h.className = "dmw-col-head";
+      h.textContent = `${col.label} (${col.cards.length})`;
+      colEl.appendChild(h);
+      const stack = document.createElement("div");
+      stack.className = "dmw-stack";
+      col.cards.forEach((c) => stack.appendChild(tableCardEl(c)));
+      colEl.appendChild(stack);
+      cols.appendChild(colEl);
+    });
+    el.appendChild(cols);
+  }
+
+  function renderTableReveal() {
+    if (!replay) return;
+    const step = replay.steps[stepIndex];
+    const body = $("dmw-table-body");
+    body.innerHTML = "";
+    $("dmw-table-pool").hidden = true;
+    $("dmw-table-pool").innerHTML = "";
+    const seats = (window.DMW_TABLE && window.DMW_TABLE.seats) || [];
+    seats.forEach((seat) => {
+      const s = TableRead.seatStateThrough(seat, step.packNum, step.pickNum, 4);
+      const row = document.createElement("div");
+      row.className = "dmw-seat-row dmw-seat-reveal";
+
+      const head = document.createElement("div");
+      head.className = "dmw-seat-reveal-head";
+      const name = document.createElement("span");
+      name.className = "dmw-seat-name";
+      name.textContent = seat.name;
+      head.appendChild(name);
+
+      const guessSet = tableReads[seat.name] || new Set();
+      const guessText = TableRead.COLORS.filter((c) => guessSet.has(c)).join("") || "—";
+      const guess = document.createElement("span");
+      guess.className = "dmw-seat-guess";
+      guess.textContent = `guess: ${guessText}`;
+      head.appendChild(guess);
+
+      const actual = document.createElement("span");
+      actual.className = "dmw-seat-actual";
+      actual.textContent = formatColorCounts(s.colorCounts) || "—";
+      head.appendChild(actual);
+
+      row.appendChild(head);
+
+      const keyRow = document.createElement("div");
+      keyRow.className = "dmw-grid dmw-seat-keycards";
+      s.keyCards.forEach((c) => keyRow.appendChild(tableCardEl(c)));
+      row.appendChild(keyRow);
+
+      const poolBtn = document.createElement("button");
+      poolBtn.type = "button";
+      poolBtn.className = "dmw-seat-pool-btn";
+      poolBtn.textContent = "see pool ▸";
+      poolBtn.addEventListener("click", () => renderTablePool(seat.name, s.pool));
+      row.appendChild(poolBtn);
+
+      body.appendChild(row);
+    });
+  }
+
+  function closeTablePanel() {
+    $("dmw-table-toggle").hidden = false;
+    $("dmw-table-reveal").hidden = true;
+    $("dmw-table-close").hidden = true;
+    $("dmw-table-body").hidden = true;
+    $("dmw-table-body").innerHTML = "";
+    $("dmw-table-pool").hidden = true;
+    $("dmw-table-pool").innerHTML = "";
+  }
+
+  function openTablePanel() {
+    $("dmw-table-toggle").hidden = true;
+    $("dmw-table-reveal").hidden = false;
+    $("dmw-table-close").hidden = false;
+    $("dmw-table-body").hidden = false;
+    renderTableGuessBody();
+  }
+
+  function updateTableVisibility() {
+    const hasTable =
+      window.DMW_TABLE && Array.isArray(window.DMW_TABLE.seats) && window.DMW_TABLE.seats.length > 0;
+    $("dmw-table-section").hidden = !hasTable;
+  }
+
   function renderStep() {
     const step = replay.steps[stepIndex];
+    updateTableVisibility();
     $("dmw-position").textContent = `Pack ${step.packNum} · Pick ${step.pickNum} (${stepIndex + 1}/${replay.steps.length})`;
     $("dmw-prev").disabled = stepIndex === 0;
     $("dmw-next").disabled = stepIndex === replay.steps.length - 1;
@@ -224,6 +397,8 @@
     stepIndex = 0;
     revealed = false;
     cardData = new Map();
+    tableReads = {};
+    closeTablePanel();
     $("dmw-landing").hidden = true;
     $("dmw-replay").hidden = false;
     renderStep();
@@ -253,6 +428,8 @@
       stepIndex = replay.steps.length - 1; // jump to the latest pick
       revealed = false;
       cardData = new Map();
+      tableReads = {};
+      closeTablePanel();
       $("dmw-landing").hidden = true;
       $("dmw-replay").hidden = false;
       renderStep();
@@ -391,6 +568,9 @@
       Prefs.savePref("splitCreatures", splitCreatures);
       if (replay) renderStep();
     });
+    $("dmw-table-toggle").addEventListener("click", openTablePanel);
+    $("dmw-table-reveal").addEventListener("click", renderTableReveal);
+    $("dmw-table-close").addEventListener("click", closeTablePanel);
     maybeAutoOpen();
   }
 
