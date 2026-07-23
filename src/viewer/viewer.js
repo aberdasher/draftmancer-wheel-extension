@@ -171,16 +171,110 @@
     return tableReads[name];
   }
 
+  // Seats ordered to match DMW_TABLE.ring (viewer excluded — the ring's own
+  // seat isn't in DMW_TABLE.seats), falling back to seat order as-is when
+  // there's no ring (backward compatible with logs that predate it).
+  function orderedSeats() {
+    const seats = (window.DMW_TABLE && window.DMW_TABLE.seats) || [];
+    const ring = window.DMW_TABLE && Array.isArray(window.DMW_TABLE.ring) ? window.DMW_TABLE.ring : null;
+    if (!ring || !ring.length) return seats;
+    const byName = new Map(seats.map((s) => [s.name, s]));
+    const ordered = ring.slice(1).map((name) => byName.get(name)).filter(Boolean);
+    const placed = new Set(ordered.map((s) => s.name));
+    seats.forEach((s) => {
+      if (!placed.has(s.name)) ordered.push(s); // shouldn't happen; keeps data from silently vanishing
+    });
+    return ordered;
+  }
+
+  // seat name -> L/R label ("L1", "R2", …), empty when there's no ring.
+  function seatLabelMap() {
+    const ring = window.DMW_TABLE && Array.isArray(window.DMW_TABLE.ring) ? window.DMW_TABLE.ring : null;
+    if (!ring || !ring.length) return new Map();
+    return new Map(TableRead.ringLabels(ring).map((o) => [o.name, o.label]));
+  }
+
+  function seatRowLabel(seat, labelMap) {
+    const lbl = labelMap.get(seat.name);
+    return lbl ? `[${lbl}] ${seat.name}` : seat.name;
+  }
+
+  // --- Seat ring (circular map above the list) -----------------------------
+  function renderSeatRing() {
+    const ringEl = $("dmw-table-ring");
+    const ring = window.DMW_TABLE && Array.isArray(window.DMW_TABLE.ring) ? window.DMW_TABLE.ring : null;
+    ringEl.innerHTML = "";
+    if (!ring || !ring.length) {
+      ringEl.hidden = true;
+      return;
+    }
+    ringEl.hidden = false;
+    const R = 38; // % radius from center; leaves room for node size inside the box
+    TableRead.ringLabels(ring).forEach((node) => {
+      const rad = (node.angleDeg * Math.PI) / 180;
+      const left = 50 + R * Math.sin(rad);
+      const top = 50 - R * Math.cos(rad);
+      const el = document.createElement("div");
+      el.className = "dmw-ring-node" + (node.isViewer ? " dmw-ring-viewer" : "");
+      el.style.left = left + "%";
+      el.style.top = top + "%";
+      el.dataset.seatName = node.name;
+      const nameEl = document.createElement("div");
+      nameEl.className = "dmw-ring-name";
+      nameEl.textContent = node.isViewer ? "You" : node.name;
+      el.appendChild(nameEl);
+      if (!node.isViewer) {
+        const labelEl = document.createElement("div");
+        labelEl.className = "dmw-ring-label";
+        labelEl.textContent = node.label;
+        el.appendChild(labelEl);
+      }
+      const dots = document.createElement("div");
+      dots.className = "dmw-ring-dots";
+      el.appendChild(dots);
+      ringEl.appendChild(el);
+    });
+    // Fixed Pack-1 pass direction (ring index increases clockwise — see
+    // TableRead.ringLabels' angle formula), drawn once, centered.
+    const arrow = document.createElement("div");
+    arrow.className = "dmw-ring-arrow";
+    arrow.textContent = "↻"; // clockwise open circle arrow
+    arrow.title = "Pack 1 pass direction";
+    ringEl.appendChild(arrow);
+  }
+
+  // Adds/replaces a compact row of colored dots (nonzero WUBRG) on a seat's
+  // ring node. No-op when the ring isn't rendered or the seat isn't on it.
+  function renderRingColorDots(seatName, colorCounts) {
+    const ringEl = $("dmw-table-ring");
+    if (!ringEl || ringEl.hidden) return;
+    const node = Array.from(ringEl.querySelectorAll(".dmw-ring-node")).find(
+      (n) => n.dataset.seatName === seatName
+    );
+    if (!node) return;
+    const dotsEl = node.querySelector(".dmw-ring-dots");
+    if (!dotsEl) return;
+    dotsEl.innerHTML = "";
+    TableRead.COLORS.forEach((c) => {
+      if ((colorCounts[c] || 0) > 0) {
+        const dot = document.createElement("span");
+        dot.className = "dmw-ring-dot dmw-color-" + c;
+        dotsEl.appendChild(dot);
+      }
+    });
+  }
+
   function renderTableGuessBody() {
     const body = $("dmw-table-body");
     body.innerHTML = "";
-    const seats = (window.DMW_TABLE && window.DMW_TABLE.seats) || [];
+    const seats = orderedSeats();
+    const labelMap = seatLabelMap();
     seats.forEach((seat) => {
       const row = document.createElement("div");
       row.className = "dmw-seat-row";
       const name = document.createElement("span");
       name.className = "dmw-seat-name";
-      name.textContent = seat.name;
+      name.textContent = seatRowLabel(seat, labelMap);
       row.appendChild(name);
       const toggles = document.createElement("span");
       toggles.className = "dmw-color-toggles";
@@ -248,9 +342,12 @@
     body.innerHTML = "";
     $("dmw-table-pool").hidden = true;
     $("dmw-table-pool").innerHTML = "";
-    const seats = (window.DMW_TABLE && window.DMW_TABLE.seats) || [];
+    renderSeatRing(); // refresh (clears any stale dots) before repopulating them below
+    const seats = orderedSeats();
+    const labelMap = seatLabelMap();
     seats.forEach((seat) => {
       const s = TableRead.seatStateThrough(seat, step.packNum, step.pickNum, 4);
+      renderRingColorDots(seat.name, s.colorCounts);
       const row = document.createElement("div");
       row.className = "dmw-seat-row dmw-seat-reveal";
 
@@ -258,7 +355,7 @@
       head.className = "dmw-seat-reveal-head";
       const name = document.createElement("span");
       name.className = "dmw-seat-name";
-      name.textContent = seat.name;
+      name.textContent = seatRowLabel(seat, labelMap);
       head.appendChild(name);
 
       const guessSet = tableReads[seat.name] || new Set();
@@ -299,6 +396,8 @@
     $("dmw-table-body").innerHTML = "";
     $("dmw-table-pool").hidden = true;
     $("dmw-table-pool").innerHTML = "";
+    $("dmw-table-ring").hidden = true;
+    $("dmw-table-ring").innerHTML = "";
   }
 
   function openTablePanel() {
@@ -306,6 +405,7 @@
     $("dmw-table-reveal").hidden = false;
     $("dmw-table-close").hidden = false;
     $("dmw-table-body").hidden = false;
+    renderSeatRing();
     renderTableGuessBody();
   }
 

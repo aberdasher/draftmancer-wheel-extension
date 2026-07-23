@@ -217,6 +217,73 @@ button:disabled {
   gap: 8px;
   margin-top: 10px;
 }
+/* Width == height so the % radius math in renderSeatRing() traces a true
+   circle rather than an ellipse stretched to the panel's full width. */
+#dmw-table-ring {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  max-width: 100%;
+  margin: 12px auto;
+}
+.dmw-ring-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: #23262d;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 4px 6px;
+  font-size: 11px;
+  min-width: 56px;
+  white-space: nowrap;
+}
+.dmw-ring-node.dmw-ring-viewer {
+  background: #2a6;
+  border-color: #2a6;
+  color: #06150c;
+  font-weight: bold;
+}
+.dmw-ring-name {
+  font-weight: bold;
+}
+.dmw-ring-label {
+  opacity: 0.75;
+  font-size: 10px;
+}
+.dmw-ring-dots {
+  display: flex;
+  gap: 2px;
+  margin-top: 3px;
+  justify-content: center;
+  min-height: 8px;
+}
+.dmw-ring-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+}
+.dmw-ring-dot.dmw-color-W { background: #f2e6b8; }
+.dmw-ring-dot.dmw-color-U { background: #4a7fc9; }
+.dmw-ring-dot.dmw-color-B { background: #4a4a4a; }
+.dmw-ring-dot.dmw-color-R { background: #c1443c; }
+.dmw-ring-dot.dmw-color-G { background: #3f8f4f; }
+/* Fixed Pack-1 pass-direction glyph, centered in the ring — direction never
+   changes with the data (angles always increase clockwise around the ring). */
+.dmw-ring-arrow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 34px;
+  opacity: 0.3;
+  pointer-events: none;
+}
 .dmw-seat-row {
   display: flex;
   align-items: center;
