@@ -243,9 +243,12 @@
     ringEl.appendChild(arrow);
   }
 
-  // Adds/replaces a compact row of colored dots (nonzero WUBRG) on a seat's
-  // ring node. No-op when the ring isn't rendered or the seat isn't on it.
-  function renderRingColorDots(seatName, colorCounts) {
+  // Adds/replaces a compact row of colored dots on a seat's ring node.
+  // Prefers the inferred main colors (st.inferred.main); when that's empty
+  // (unanalyzed cube / no signal data) falls back to nonzero WUBRG colorCounts,
+  // so the ring always agrees with whatever the reveal headline shows.
+  // No-op when the ring isn't rendered or the seat isn't on it.
+  function renderRingColorDots(seatName, st) {
     const ringEl = $("dmw-table-ring");
     if (!ringEl || ringEl.hidden) return;
     const node = Array.from(ringEl.querySelectorAll(".dmw-ring-node")).find(
@@ -255,12 +258,14 @@
     const dotsEl = node.querySelector(".dmw-ring-dots");
     if (!dotsEl) return;
     dotsEl.innerHTML = "";
-    TableRead.COLORS.forEach((c) => {
-      if ((colorCounts[c] || 0) > 0) {
-        const dot = document.createElement("span");
-        dot.className = "dmw-ring-dot dmw-color-" + c;
-        dotsEl.appendChild(dot);
-      }
+    const colors =
+      st.inferred && st.inferred.main && st.inferred.main.length
+        ? st.inferred.main
+        : TableRead.COLORS.filter((c) => (st.colorCounts[c] || 0) > 0);
+    colors.forEach((c) => {
+      const dot = document.createElement("span");
+      dot.className = "dmw-ring-dot dmw-color-" + c;
+      dotsEl.appendChild(dot);
     });
   }
 
@@ -347,7 +352,7 @@
     const labelMap = seatLabelMap();
     seats.forEach((seat) => {
       const s = TableRead.seatStateThrough(seat, step.packNum, step.pickNum, 4);
-      renderRingColorDots(seat.name, s.colorCounts);
+      renderRingColorDots(seat.name, s);
       const row = document.createElement("div");
       row.className = "dmw-seat-row dmw-seat-reveal";
 
@@ -365,6 +370,14 @@
       guess.textContent = `guess: ${guessText}`;
       head.appendChild(guess);
 
+      // Inferred headline: prominent — value+signal weighted colors when the
+      // cube's been analyzed; unanalyzed cubes (empty inferred.colors) fall
+      // back to the same raw color summary shown below, so nothing new shows.
+      const inferred = document.createElement("span");
+      inferred.className = "dmw-seat-inferred";
+      inferred.textContent = s.inferred.colors || formatColorCounts(s.colorCounts) || "—";
+      head.appendChild(inferred);
+
       const actual = document.createElement("span");
       actual.className = "dmw-seat-actual";
       actual.textContent = formatColorCounts(s.colorCounts) || "—";
@@ -372,10 +385,36 @@
 
       row.appendChild(head);
 
+      const valueLabel = document.createElement("div");
+      valueLabel.className = "dmw-seat-row-label";
+      valueLabel.textContent = "Value";
+      row.appendChild(valueLabel);
+
       const keyRow = document.createElement("div");
       keyRow.className = "dmw-grid dmw-seat-keycards";
       s.keyCards.forEach((c) => keyRow.appendChild(tableCardEl(c)));
       row.appendChild(keyRow);
+
+      if (s.signals.length) {
+        const signalsLabel = document.createElement("div");
+        signalsLabel.className = "dmw-seat-row-label";
+        signalsLabel.textContent = "Signals";
+        row.appendChild(signalsLabel);
+
+        const signalsRow = document.createElement("div");
+        signalsRow.className = "dmw-grid dmw-seat-signals";
+        s.signals.forEach((c) => {
+          const wrap = document.createElement("div");
+          wrap.className = "dmw-signal-card";
+          wrap.appendChild(tableCardEl(c));
+          const tag = document.createElement("span");
+          tag.className = "dmw-signal-arch";
+          tag.textContent = `(${c.arch})`;
+          wrap.appendChild(tag);
+          signalsRow.appendChild(wrap);
+        });
+        row.appendChild(signalsRow);
+      }
 
       const poolBtn = document.createElement("button");
       poolBtn.type = "button";
