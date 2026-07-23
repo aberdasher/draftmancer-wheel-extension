@@ -11,6 +11,7 @@
   let following = false; // viewer is tracking the live-captured draft
   let viewedDraftId = null; // draftId of the history entry currently open
   let currentSideboard = []; // uniqueIDs in the open draft's sideboard
+  let tableReads = {}; // seatName -> Set of guessed WUBRG color letters ("Read the Table")
 
   const $ = (id) => document.getElementById(id);
 
@@ -143,8 +144,319 @@
     }
   }
 
+  // --- "Read the Table" panel ---------------------------------------------
+  // Other seats' cards never go through Scryfall (only the viewer's own log
+  // is fetched), so DMW_TABLE picks/keyCards carry their own img/cmc/type —
+  // build elements straight from those embedded fields instead of dataFor/cardEl.
+  function tableCardEl(card) {
+    const div = document.createElement("div");
+    div.className = "dmw-card";
+    if (card.img) {
+      const img = document.createElement("img");
+      img.src = card.img;
+      img.alt = card.name;
+      img.loading = "lazy";
+      div.appendChild(img);
+    } else {
+      const span = document.createElement("span");
+      span.className = "dmw-cardname";
+      span.textContent = card.name || "";
+      div.appendChild(span);
+    }
+    return div;
+  }
+
+  function guessSetFor(name) {
+    if (!tableReads[name]) tableReads[name] = new Set();
+    return tableReads[name];
+  }
+
+  // Seats ordered to match DMW_TABLE.ring (viewer excluded — the ring's own
+  // seat isn't in DMW_TABLE.seats), falling back to seat order as-is when
+  // there's no ring (backward compatible with logs that predate it).
+  function orderedSeats() {
+    const seats = (window.DMW_TABLE && window.DMW_TABLE.seats) || [];
+    const ring = window.DMW_TABLE && Array.isArray(window.DMW_TABLE.ring) ? window.DMW_TABLE.ring : null;
+    if (!ring || !ring.length) return seats;
+    const byName = new Map(seats.map((s) => [s.name, s]));
+    const ordered = ring.slice(1).map((name) => byName.get(name)).filter(Boolean);
+    const placed = new Set(ordered.map((s) => s.name));
+    seats.forEach((s) => {
+      if (!placed.has(s.name)) ordered.push(s); // shouldn't happen; keeps data from silently vanishing
+    });
+    return ordered;
+  }
+
+  // seat name -> L/R label ("L1", "R2", …), empty when there's no ring.
+  function seatLabelMap() {
+    const ring = window.DMW_TABLE && Array.isArray(window.DMW_TABLE.ring) ? window.DMW_TABLE.ring : null;
+    if (!ring || !ring.length) return new Map();
+    return new Map(TableRead.ringLabels(ring).map((o) => [o.name, o.label]));
+  }
+
+  function seatRowLabel(seat, labelMap) {
+    const lbl = labelMap.get(seat.name);
+    return lbl ? `[${lbl}] ${seat.name}` : seat.name;
+  }
+
+  // --- Seat ring (circular map above the list) -----------------------------
+  function renderSeatRing() {
+    const ringEl = $("dmw-table-ring");
+    const ring = window.DMW_TABLE && Array.isArray(window.DMW_TABLE.ring) ? window.DMW_TABLE.ring : null;
+    ringEl.innerHTML = "";
+    if (!ring || !ring.length) {
+      ringEl.hidden = true;
+      return;
+    }
+    ringEl.hidden = false;
+    const R = 38; // % radius from center; leaves room for node size inside the box
+    TableRead.ringLabels(ring).forEach((node) => {
+      const rad = (node.angleDeg * Math.PI) / 180;
+      const left = 50 + R * Math.sin(rad);
+      const top = 50 - R * Math.cos(rad);
+      const el = document.createElement("div");
+      el.className = "dmw-ring-node" + (node.isViewer ? " dmw-ring-viewer" : "");
+      el.style.left = left + "%";
+      el.style.top = top + "%";
+      el.dataset.seatName = node.name;
+      const nameEl = document.createElement("div");
+      nameEl.className = "dmw-ring-name";
+      nameEl.textContent = node.isViewer ? "You" : node.name;
+      el.appendChild(nameEl);
+      if (!node.isViewer) {
+        const labelEl = document.createElement("div");
+        labelEl.className = "dmw-ring-label";
+        labelEl.textContent = node.label;
+        el.appendChild(labelEl);
+      }
+      const dots = document.createElement("div");
+      dots.className = "dmw-ring-dots";
+      el.appendChild(dots);
+      ringEl.appendChild(el);
+    });
+    // Fixed Pack-1 pass direction (ring index increases clockwise — see
+    // TableRead.ringLabels' angle formula), drawn once, centered.
+    const arrow = document.createElement("div");
+    arrow.className = "dmw-ring-arrow";
+    arrow.textContent = "↻"; // clockwise open circle arrow
+    arrow.title = "Pack 1 pass direction";
+    ringEl.appendChild(arrow);
+  }
+
+  // Adds/replaces a compact row of colored dots on a seat's ring node.
+  // Prefers the inferred main colors (st.inferred.main); when that's empty
+  // (unanalyzed cube / no signal data) falls back to nonzero WUBRG colorCounts,
+  // so the ring always agrees with whatever the reveal headline shows.
+  // No-op when the ring isn't rendered or the seat isn't on it.
+  function renderRingColorDots(seatName, st) {
+    const ringEl = $("dmw-table-ring");
+    if (!ringEl || ringEl.hidden) return;
+    const node = Array.from(ringEl.querySelectorAll(".dmw-ring-node")).find(
+      (n) => n.dataset.seatName === seatName
+    );
+    if (!node) return;
+    const dotsEl = node.querySelector(".dmw-ring-dots");
+    if (!dotsEl) return;
+    dotsEl.innerHTML = "";
+    const colors =
+      st.inferred && st.inferred.main && st.inferred.main.length
+        ? st.inferred.main
+        : TableRead.COLORS.filter((c) => (st.colorCounts[c] || 0) > 0);
+    colors.forEach((c) => {
+      const dot = document.createElement("span");
+      dot.className = "dmw-ring-dot dmw-color-" + c;
+      dotsEl.appendChild(dot);
+    });
+  }
+
+  function renderTableGuessBody() {
+    const body = $("dmw-table-body");
+    body.innerHTML = "";
+    const seats = orderedSeats();
+    const labelMap = seatLabelMap();
+    seats.forEach((seat) => {
+      const row = document.createElement("div");
+      row.className = "dmw-seat-row";
+      const name = document.createElement("span");
+      name.className = "dmw-seat-name";
+      name.textContent = seatRowLabel(seat, labelMap);
+      row.appendChild(name);
+      const toggles = document.createElement("span");
+      toggles.className = "dmw-color-toggles";
+      const set = guessSetFor(seat.name);
+      TableRead.COLORS.forEach((col) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "dmw-color-btn dmw-color-" + col;
+        btn.textContent = col;
+        btn.classList.toggle("dmw-active", set.has(col));
+        btn.addEventListener("click", () => {
+          if (set.has(col)) set.delete(col);
+          else set.add(col);
+          btn.classList.toggle("dmw-active", set.has(col));
+        });
+        toggles.appendChild(btn);
+      });
+      row.appendChild(toggles);
+      body.appendChild(row);
+    });
+  }
+
+  // Nonzero WUBRG counts, formatted "7G · 3R · 1U" (count desc, WUBRG tiebreak).
+  function formatColorCounts(counts) {
+    return TableRead.COLORS.map((c) => ({ c, n: counts[c] || 0 }))
+      .filter((x) => x.n > 0)
+      .sort((a, b) => b.n - a.n || TableRead.COLORS.indexOf(a.c) - TableRead.COLORS.indexOf(b.c))
+      .map((x) => `${x.n}${x.c}`)
+      .join(" · ");
+  }
+
+  function renderTablePool(seatName, pool) {
+    const el = $("dmw-table-pool");
+    el.innerHTML = "";
+    el.hidden = false;
+    const head = document.createElement("div");
+    head.className = "dmw-col-head";
+    head.textContent = `${seatName}'s pool (${pool.length})`;
+    el.appendChild(head);
+    const cols = document.createElement("div");
+    cols.className = "dmw-cols";
+    // columnize only reads name/cmc/colors/typeLine to group+sort; carry `img`
+    // through unused by it so tableCardEl can still render the embedded art.
+    const enriched = pool.map((c) => ({ name: c.name, cmc: c.cmc, colors: c.colors || [], typeLine: c.type || "", img: c.img }));
+    DeckLayout.columnize(enriched, "cmc").forEach((col) => {
+      const colEl = document.createElement("div");
+      colEl.className = "dmw-col";
+      const h = document.createElement("div");
+      h.className = "dmw-col-head";
+      h.textContent = `${col.label} (${col.cards.length})`;
+      colEl.appendChild(h);
+      const stack = document.createElement("div");
+      stack.className = "dmw-stack";
+      col.cards.forEach((c) => stack.appendChild(tableCardEl(c)));
+      colEl.appendChild(stack);
+      cols.appendChild(colEl);
+    });
+    el.appendChild(cols);
+  }
+
+  function renderTableReveal() {
+    if (!replay) return;
+    const step = replay.steps[stepIndex];
+    const body = $("dmw-table-body");
+    body.innerHTML = "";
+    $("dmw-table-pool").hidden = true;
+    $("dmw-table-pool").innerHTML = "";
+    renderSeatRing(); // refresh (clears any stale dots) before repopulating them below
+    const seats = orderedSeats();
+    const labelMap = seatLabelMap();
+    seats.forEach((seat) => {
+      const s = TableRead.seatStateThrough(seat, step.packNum, step.pickNum, 4);
+      renderRingColorDots(seat.name, s);
+      const row = document.createElement("div");
+      row.className = "dmw-seat-row dmw-seat-reveal";
+
+      const head = document.createElement("div");
+      head.className = "dmw-seat-reveal-head";
+      const name = document.createElement("span");
+      name.className = "dmw-seat-name";
+      name.textContent = seatRowLabel(seat, labelMap);
+      head.appendChild(name);
+
+      const guessSet = tableReads[seat.name] || new Set();
+      const guessText = TableRead.COLORS.filter((c) => guessSet.has(c)).join("") || "—";
+      const guess = document.createElement("span");
+      guess.className = "dmw-seat-guess";
+      guess.textContent = `guess: ${guessText}`;
+      head.appendChild(guess);
+
+      // Inferred headline: prominent — value+signal weighted colors when the
+      // cube's been analyzed; unanalyzed cubes (empty inferred.colors) fall
+      // back to the same raw color summary shown below, so nothing new shows.
+      const inferred = document.createElement("span");
+      inferred.className = "dmw-seat-inferred";
+      inferred.textContent = s.inferred.colors || formatColorCounts(s.colorCounts) || "—";
+      head.appendChild(inferred);
+
+      const actual = document.createElement("span");
+      actual.className = "dmw-seat-actual";
+      actual.textContent = formatColorCounts(s.colorCounts) || "—";
+      head.appendChild(actual);
+
+      row.appendChild(head);
+
+      const valueLabel = document.createElement("div");
+      valueLabel.className = "dmw-seat-row-label";
+      valueLabel.textContent = "Value";
+      row.appendChild(valueLabel);
+
+      const keyRow = document.createElement("div");
+      keyRow.className = "dmw-grid dmw-seat-keycards";
+      s.keyCards.forEach((c) => keyRow.appendChild(tableCardEl(c)));
+      row.appendChild(keyRow);
+
+      if (s.signals.length) {
+        const signalsLabel = document.createElement("div");
+        signalsLabel.className = "dmw-seat-row-label";
+        signalsLabel.textContent = "Signals";
+        row.appendChild(signalsLabel);
+
+        const signalsRow = document.createElement("div");
+        signalsRow.className = "dmw-grid dmw-seat-signals";
+        s.signals.forEach((c) => {
+          const wrap = document.createElement("div");
+          wrap.className = "dmw-signal-card";
+          wrap.appendChild(tableCardEl(c));
+          const tag = document.createElement("span");
+          tag.className = "dmw-signal-arch";
+          tag.textContent = `(${c.arch})`;
+          wrap.appendChild(tag);
+          signalsRow.appendChild(wrap);
+        });
+        row.appendChild(signalsRow);
+      }
+
+      const poolBtn = document.createElement("button");
+      poolBtn.type = "button";
+      poolBtn.className = "dmw-seat-pool-btn";
+      poolBtn.textContent = "see pool ▸";
+      poolBtn.addEventListener("click", () => renderTablePool(seat.name, s.pool));
+      row.appendChild(poolBtn);
+
+      body.appendChild(row);
+    });
+  }
+
+  function closeTablePanel() {
+    $("dmw-table-toggle").hidden = false;
+    $("dmw-table-reveal").hidden = true;
+    $("dmw-table-close").hidden = true;
+    $("dmw-table-body").hidden = true;
+    $("dmw-table-body").innerHTML = "";
+    $("dmw-table-pool").hidden = true;
+    $("dmw-table-pool").innerHTML = "";
+    $("dmw-table-ring").hidden = true;
+    $("dmw-table-ring").innerHTML = "";
+  }
+
+  function openTablePanel() {
+    $("dmw-table-toggle").hidden = true;
+    $("dmw-table-reveal").hidden = false;
+    $("dmw-table-close").hidden = false;
+    $("dmw-table-body").hidden = false;
+    renderSeatRing();
+    renderTableGuessBody();
+  }
+
+  function updateTableVisibility() {
+    const hasTable =
+      window.DMW_TABLE && Array.isArray(window.DMW_TABLE.seats) && window.DMW_TABLE.seats.length > 0;
+    $("dmw-table-section").hidden = !hasTable;
+  }
+
   function renderStep() {
     const step = replay.steps[stepIndex];
+    updateTableVisibility();
     $("dmw-position").textContent = `Pack ${step.packNum} · Pick ${step.pickNum} (${stepIndex + 1}/${replay.steps.length})`;
     $("dmw-prev").disabled = stepIndex === 0;
     $("dmw-next").disabled = stepIndex === replay.steps.length - 1;
@@ -224,6 +536,8 @@
     stepIndex = 0;
     revealed = false;
     cardData = new Map();
+    tableReads = {};
+    closeTablePanel();
     $("dmw-landing").hidden = true;
     $("dmw-replay").hidden = false;
     renderStep();
@@ -253,6 +567,8 @@
       stepIndex = replay.steps.length - 1; // jump to the latest pick
       revealed = false;
       cardData = new Map();
+      tableReads = {};
+      closeTablePanel();
       $("dmw-landing").hidden = true;
       $("dmw-replay").hidden = false;
       renderStep();
@@ -391,6 +707,9 @@
       Prefs.savePref("splitCreatures", splitCreatures);
       if (replay) renderStep();
     });
+    $("dmw-table-toggle").addEventListener("click", openTablePanel);
+    $("dmw-table-reveal").addEventListener("click", renderTableReveal);
+    $("dmw-table-close").addEventListener("click", closeTablePanel);
     maybeAutoOpen();
   }
 

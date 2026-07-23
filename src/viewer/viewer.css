@@ -197,3 +197,192 @@ button:disabled {
   font-weight: normal;
   opacity: 0.55;
 }
+#dmw-table-section {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #333;
+}
+#dmw-table-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+#dmw-table-note {
+  opacity: 0.8;
+  font-size: 13px;
+}
+#dmw-table-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+/* Width == height so the % radius math in renderSeatRing() traces a true
+   circle rather than an ellipse stretched to the panel's full width. */
+#dmw-table-ring {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  max-width: 100%;
+  margin: 12px auto;
+}
+.dmw-ring-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: #23262d;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 4px 6px;
+  font-size: 11px;
+  min-width: 56px;
+  white-space: nowrap;
+}
+.dmw-ring-node.dmw-ring-viewer {
+  background: #2a6;
+  border-color: #2a6;
+  color: #06150c;
+  font-weight: bold;
+}
+.dmw-ring-name {
+  font-weight: bold;
+}
+.dmw-ring-label {
+  opacity: 0.75;
+  font-size: 10px;
+}
+.dmw-ring-dots {
+  display: flex;
+  gap: 2px;
+  margin-top: 3px;
+  justify-content: center;
+  min-height: 8px;
+}
+.dmw-ring-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+}
+.dmw-ring-dot.dmw-color-W { background: #f2e6b8; }
+.dmw-ring-dot.dmw-color-U { background: #4a7fc9; }
+.dmw-ring-dot.dmw-color-B { background: #4a4a4a; }
+.dmw-ring-dot.dmw-color-R { background: #c1443c; }
+.dmw-ring-dot.dmw-color-G { background: #3f8f4f; }
+/* Fixed Pack-1 pass-direction glyph, centered in the ring — direction never
+   changes with the data (angles always increase clockwise around the ring). */
+.dmw-ring-arrow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 34px;
+  opacity: 0.3;
+  pointer-events: none;
+}
+.dmw-seat-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 6px 0;
+  border-bottom: 1px solid #2a2d33;
+}
+.dmw-seat-name {
+  min-width: 120px;
+  font-weight: bold;
+}
+.dmw-color-toggles {
+  display: inline-flex;
+  gap: 4px;
+}
+.dmw-color-btn {
+  background: #23262d;
+  color: #eee;
+  border: 1px solid #444;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 50%;
+  font-weight: bold;
+  opacity: 0.6;
+}
+.dmw-color-btn.dmw-active {
+  opacity: 1;
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+.dmw-color-btn.dmw-color-W { background: #f2e6b8; color: #222; }
+.dmw-color-btn.dmw-color-U { background: #4a7fc9; }
+.dmw-color-btn.dmw-color-B { background: #4a4a4a; }
+.dmw-color-btn.dmw-color-R { background: #c1443c; }
+.dmw-color-btn.dmw-color-G { background: #3f8f4f; }
+.dmw-seat-reveal {
+  flex-direction: column;
+  align-items: stretch;
+}
+.dmw-seat-reveal-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.dmw-seat-guess,
+.dmw-seat-actual {
+  font-size: 13px;
+  opacity: 0.85;
+}
+.dmw-seat-inferred {
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  color: #f9a;
+}
+.dmw-seat-row-label {
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.6;
+  margin-top: 8px;
+}
+.dmw-seat-keycards {
+  margin-top: 6px;
+}
+.dmw-seat-keycards .dmw-card {
+  width: 80px;
+}
+.dmw-seat-signals {
+  margin-top: 6px;
+}
+.dmw-signal-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.dmw-signal-card .dmw-card {
+  width: 80px;
+}
+.dmw-signal-arch {
+  font-size: 11px;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+.dmw-seat-pool-btn {
+  align-self: flex-start;
+  margin-top: 6px;
+  background: transparent;
+  color: #9c9;
+  border: 1px solid #2a6;
+  padding: 3px 8px;
+  font-size: 12px;
+}
+#dmw-table-pool {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed #333;
+}
