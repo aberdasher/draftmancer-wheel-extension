@@ -8,6 +8,8 @@
 // SyntaxError that breaks the WHOLE bundle. Only globalThis.TableRead / exports escape.
 (function () {
   const WUBRG = ["W", "U", "B", "R", "G"];
+  const LIFT_MIN = 1.5, WHEEL_MAX = 0.35;
+  const SIGNAL_BASE = 1.0, VALUE_W = 0.5, MAIN_FRAC = 0.5, SPLASH_FRAC = 0.2;
 
   function picksThrough(picks, pack, pick) {
     return (picks || []).filter(
@@ -33,9 +35,47 @@
       .map((c) => ({ name: c.name, rating: c.rating, colors: c.colors || [], cmc: c.cmc, type: c.type, img: c.img }));
   }
 
+  function archColors(arch) {
+    return (arch || "").split("").filter((ch) => WUBRG.indexOf(ch) !== -1);
+  }
+
+  function topSignals(picks, n) {
+    return (picks || [])
+      .filter((c) => c.arch && (c.lift || 0) >= LIFT_MIN && (c.wheel || 0) <= WHEEL_MAX)
+      .slice()
+      .sort((a, b) => (b.lift || 0) - (a.lift || 0) || (b.rating || 0) - (a.rating || 0) || a.name.localeCompare(b.name))
+      .slice(0, n)
+      .map((c) => ({ name: c.name, arch: c.arch, lift: c.lift, colors: c.colors || [], img: c.img, rating: c.rating, cmc: c.cmc, type: c.type }));
+  }
+
+  function inferColors(picks) {
+    const value = keyCards(picks, 4);
+    const signals = topSignals(picks, 4);
+    const w = { W: 0, U: 0, B: 0, R: 0, G: 0 };
+    for (const s of signals) {
+      const mult = SIGNAL_BASE * Math.max(1, s.lift || 1);
+      for (const c of archColors(s.arch)) w[c] += mult;
+    }
+    for (const v of value) {
+      for (const c of v.colors || []) if (w[c] !== undefined) w[c] += VALUE_W;
+    }
+    const maxw = Math.max.apply(null, WUBRG.map((c) => w[c]));
+    if (maxw <= 0) return { colors: "", main: [], splash: [] };
+    const main = WUBRG.filter((c) => w[c] >= MAIN_FRAC * maxw);
+    const splash = WUBRG.filter((c) => w[c] >= SPLASH_FRAC * maxw && w[c] < MAIN_FRAC * maxw);
+    return { colors: main.join("") + splash.map((c) => c.toLowerCase()).join(""), main, splash };
+  }
+
   function seatStateThrough(seat, pack, pick, n) {
     const pool = picksThrough(seat.picks, pack, pick);
-    return { name: seat.name, colorCounts: colorCounts(pool), keyCards: keyCards(pool, n), pool };
+    return {
+      name: seat.name,
+      colorCounts: colorCounts(pool),
+      keyCards: keyCards(pool, n),
+      signals: topSignals(pool, n),
+      inferred: inferColors(pool),
+      pool,
+    };
   }
 
   function ringLabels(ring) {
@@ -49,7 +89,7 @@
     });
   }
 
-  const TableRead = { picksThrough, colorCounts, keyCards, seatStateThrough, ringLabels, COLORS: WUBRG };
+  const TableRead = { picksThrough, colorCounts, keyCards, archColors, topSignals, inferColors, seatStateThrough, ringLabels, COLORS: WUBRG };
   if (typeof module !== "undefined" && module.exports) module.exports = TableRead;
   if (typeof globalThis !== "undefined") globalThis.TableRead = TableRead;
 })();

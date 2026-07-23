@@ -66,3 +66,50 @@ test("ringLabels: empty/short input", () => {
   assert.deepStrictEqual(TR.ringLabels([]), []);
   assert.deepStrictEqual(TR.ringLabels(["solo"]), [{ name: "solo", label: "You", angleDeg: 180, isViewer: true }]);
 });
+
+const sig = (name, arch, lift, wheel, colors, rating) =>
+  ({ name, arch, lift, wheel, colors, rating, cmc: 0, type: "", img: "", pack: 0, pick: 0 });
+
+test("archColors splits archetype combos", () => {
+  assert.deepStrictEqual(TR.archColors("UB"), ["U", "B"]);
+  assert.deepStrictEqual(TR.archColors("WRG"), ["W", "R", "G"]);
+  assert.deepStrictEqual(TR.archColors(""), []);
+  assert.deepStrictEqual(TR.archColors(null), []);
+});
+
+test("topSignals filters by lift/wheel and orders by lift desc", () => {
+  const picks = [
+    sig("Reanimate", "UB", 3.0, 0.01, ["B"], 3),
+    sig("Entomb", "UB", 2.0, 0.07, ["B"], 3),
+    sig("Weak", "UB", 1.2, 0.05, ["B"], 3),     // lift < 1.5 → excluded
+    sig("Wheeler", "UB", 2.5, 0.6, ["B"], 3),   // wheel > 0.35 → excluded
+    sig("NoArch", null, 5, 0.0, ["B"], 3),      // no arch → excluded
+  ];
+  assert.deepStrictEqual(TR.topSignals(picks, 4).map((c) => c.name), ["Reanimate", "Entomb"]);
+});
+
+test("inferColors: signals dominate, colorless bombs add nothing", () => {
+  const picks = [
+    sig("Reanimate", "UB", 3.0, 0.01, ["B"], 3),
+    sig("Entomb", "UB", 2.0, 0.07, ["B"], 3),
+    sig("Black Lotus", null, 0, null, [], 5),   // colorless value → no color
+    sig("Sol Ring", null, 0, null, [], 4),
+    sig("Green Thing", null, 0, null, ["G"], 3.5),
+  ];
+  const inf = TR.inferColors(picks);
+  assert.strictEqual(inf.main.join(""), "UB");
+  assert.ok(!inf.main.includes("G"));
+  assert.ok(inf.colors.startsWith("UB"));
+});
+
+test("inferColors: no-signal colorless cluster → empty (raw-count fallback)", () => {
+  const picks = [sig("Black Lotus", null, 0, null, [], 5), sig("Sol Ring", null, 0, null, [], 4)];
+  assert.deepStrictEqual(TR.inferColors(picks), { colors: "", main: [], splash: [] });
+});
+
+test("seatStateThrough exposes signals + inferred", () => {
+  const seat = { name: "s", picks: [sig("Reanimate", "UB", 3.0, 0.01, ["B"], 3)] };
+  const st = TR.seatStateThrough(seat, 2, 15, 4);
+  assert.strictEqual(st.signals[0].name, "Reanimate");
+  assert.strictEqual(st.inferred.main.join(""), "UB");
+});
