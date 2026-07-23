@@ -45,3 +45,24 @@ test("empty pool is handled", () => {
   assert.deepStrictEqual(s.colorCounts, { W: 0, U: 0, B: 0, R: 0, G: 0 });
   assert.deepStrictEqual(s.keyCards, []);
 });
+
+test("ringLabels: viewer at bottom, L/R labels around a 6-pod", () => {
+  const out = TR.ringLabels(["me", "a", "b", "c", "d", "e"]);
+  assert.strictEqual(out.length, 6);
+  assert.deepStrictEqual(out[0], { name: "me", label: "You", angleDeg: 180, isViewer: true });
+  assert.deepStrictEqual(out.slice(1).map((o) => o.label), ["L1", "L2", "L3", "R2", "R1"]);
+  // L1 is on the left half (angle between bottom=180 and top going up the left → 180..360)
+  assert.ok(out[1].angleDeg > 180 && out[1].angleDeg < 360);
+  // R1 is on the right half (0..180)
+  assert.ok(out[5].angleDeg > 0 && out[5].angleDeg < 180);
+});
+
+test("ringLabels: odd pod labels", () => {
+  const out = TR.ringLabels(["me", "a", "b", "c", "d"]).map((o) => o.label);
+  assert.deepStrictEqual(out, ["You", "L1", "L2", "R2", "R1"]);
+});
+
+test("ringLabels: empty/short input", () => {
+  assert.deepStrictEqual(TR.ringLabels([]), []);
+  assert.deepStrictEqual(TR.ringLabels(["solo"]), [{ name: "solo", label: "You", angleDeg: 180, isViewer: true }]);
+});

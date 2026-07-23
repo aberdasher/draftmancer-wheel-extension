@@ -38,7 +38,18 @@
     return { name: seat.name, colorCounts: colorCounts(pool), keyCards: keyCards(pool, n), pool };
   }
 
-  const TableRead = { picksThrough, colorCounts, keyCards, seatStateThrough, COLORS: WUBRG };
+  function ringLabels(ring) {
+    const n = (ring || []).length;
+    return (ring || []).map((name, i) => {
+      let label;
+      if (i === 0) label = "You";
+      else if (i <= n / 2) label = "L" + i;
+      else label = "R" + (n - i);
+      return { name, label, angleDeg: (180 + (i * 360) / n) % 360, isViewer: i === 0 };
+    });
+  }
+
+  const TableRead = { picksThrough, colorCounts, keyCards, seatStateThrough, ringLabels, COLORS: WUBRG };
   if (typeof module !== "undefined" && module.exports) module.exports = TableRead;
   if (typeof globalThis !== "undefined") globalThis.TableRead = TableRead;
 })();
